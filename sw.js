@@ -89,3 +89,24 @@ self.addEventListener('notificationclick', e => {
     if (self.clients.openWindow) return self.clients.openWindow(url);
   })());
 });
+
+/* Браузер сам перевыпустил подписку (истёк срок, обновились ключи FCM).
+   Без этого уведомления молча перестают приходить через 1-2 месяца. */
+self.addEventListener('pushsubscriptionchange', e => {
+  e.waitUntil((async () => {
+    try {
+      const opts = (e.oldSubscription && e.oldSubscription.options) || { userVisibleOnly: true };
+      const sub = await self.registration.pushManager.subscribe(opts);
+      const cls = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      if (cls.length) {
+        for (const c of cls) c.postMessage({ type: 'push-resubscribe', sub: sub.toJSON() });
+      } else {
+        await fetch('/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() })
+        }).catch(() => {});
+      }
+    } catch (_) {}
+  })());
+});
