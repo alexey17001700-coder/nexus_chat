@@ -919,6 +919,7 @@ function createChannel(){
   channels.push(ch);
   saveChannels();
   pub(T_DIR, JSON.stringify(channels), { retain: true });
+  ntfyPub(nDir(), JSON.stringify(channels.slice(-20)));
   closeCreate();
   joinChannel(id);
   toast('Канал создан ✨');
