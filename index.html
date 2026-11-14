@@ -968,6 +968,7 @@ function addMsg(chId, m, live){
   seen[chId].add(m.id);
   store[chId].push(m);
   if (store[chId].length > 120) store[chId] = store[chId].slice(-120);
+  if (live) log('← принято от ' + (m.nick || '?') + ' в "' + chId + '"');
   if (live && chId === cur) renderMsgs();
   if (live && chId !== cur) toast('💬 ' + (m.nick || 'Кто-то') + ': ' + (m.type === 'text' ? m.text.slice(0,40) : 'вложение'));
 }
