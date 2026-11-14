@@ -1232,6 +1232,21 @@ function showTyping(nick){
   typingTimers[nick] = setTimeout(()=>{ $('typing').textContent = ''; }, 2200);
 }
 
+/* ================= БАННЕР НОВОГО СООБЩЕНИЯ ================= */
+let bannerCh = null, bannerTimer = null;
+function showBanner(chan, nick, text, chId){
+  bannerCh = chId;
+  $('bannerT1').textContent = chan + ' · ' + nick;
+  $('bannerT2').textContent = text;
+  $('banner').classList.add('on');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => $('banner').classList.remove('on'), 5000);
+}
+function bannerGo(){
+  $('banner').classList.remove('on');
+  if (bannerCh) joinChannel(bannerCh);
+}
+
 /* ================= FILES ================= */
 let fileMode = '*/*';
 function pickFile(accept){ fileMode = accept; const f = $('fileIn'); f.accept = accept; f.value = ''; f.click(); }
