@@ -793,8 +793,11 @@ function setNet(on, txt){
 function updateNet(){
   const live = clients.filter(c => c.connected).length;
   const httpOk = ntfyAlive && (Date.now() - lastHttpOk < 25000);
-  if (live > 0){ setNet(true, 'в сети · MQTT ' + live + '/' + BROKERS.length + (httpOk ? ' + HTTP' : '')); return; }
-  if (httpOk){ setNet(true, 'в сети · HTTP'); return; }
+  const tags = [];
+  if (wsAlive()) tags.push('Vivo');
+  if (live > 0) tags.push('MQTT ' + live + '/' + BROKERS.length);
+  if (httpOk) tags.push('HTTP');
+  if (tags.length){ setNet(true, 'в сети · ' + tags.join(' + ')); return; }
   setNet(false, (Date.now() - netStarted > 12000) ? 'нет связи — проверь интернет' : 'подключение…');
 }
 async function connectMQTT(){
