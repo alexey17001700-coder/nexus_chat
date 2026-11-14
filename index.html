@@ -1330,15 +1330,52 @@ function createChannel(){
   const ic = ($('inChanIc').value.trim() || '💬').slice(0,2);
   if (name.length < 2){ toast('Название — минимум 2 символа'); return; }
   const id = 'c' + uid();
+  deleted.delete(id);   // если такой id когда-то удаляли — снимаем метку
   const ch = { id, name, ic, by: me.nick, sec: randSecret() };
   channels.push(ch);
   saveChannels();
+  saveDeleted();
   pub(T_DIR, JSON.stringify(channels), { retain: true });
   wsPub('__dir__', { t: 'dir', d: channels });
   ntfyPub(nDir(), JSON.stringify(channels.slice(-20)));
   closeCreate();
   joinChannel(id);
   toast('Канал создан ✨');
+}
+
+/* ================= УДАЛЕНИЕ КАНАЛА ================= */
+let delTarget = null;
+function askDelete(id){
+  const c = channels.find(x => x.id === id);
+  if (!c) return;
+  delTarget = id;
+  $('delName').textContent = (c.ic || '💬') + ' ' + c.name;
+  $('delModal').classList.add('on');
+}
+function closeDelete(){ $('delModal').classList.remove('on'); delTarget = null; }
+function confirmDelete(){
+  const id = delTarget;
+  closeDelete();
+  if (!id) return;
+  /* метка удаления — чтобы канал не вернулся из истории справочника */
+  deleted.add(id);
+  saveDeleted();
+  channels = channels.filter(c => c.id !== id);
+  saveChannels();
+  delete store[id]; delete seen[id]; delete unread[id]; delete online[id];
+  try { localStorage.removeItem('nx_msgs_' + id); } catch(e){}
+  try { if (wsSocks[id]){ wsSocks[id].close(); delete wsSocks[id]; } } catch(e){}
+  /* сообщаем всем участникам: канал удалён (tombstone в справочнике) */
+  const full = channels.concat([{ id, del: true }]);
+  pub(T_DIR, JSON.stringify(full), { retain: true });
+  wsPub('__dir__', { t: 'dir', d: full });
+  ntfyPub(nDir(), JSON.stringify(full.slice(-20)));
+  if (cur === id){
+    if (channels.length) joinChannel(channels[0].id);
+    else { cur = null; $('topName').textContent = 'Каналы'; renderMsgs(); }
+  }
+  renderChannels();
+  toast('Канал удалён 🗑');
 }
 
 /* ================= MESSAGES ================= */
