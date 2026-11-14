@@ -903,7 +903,7 @@ function subscribeAll(){
     });
   });
 }
-function subscribeChannel(id){ subscribeAll(); }
+function subscribeChannel(id){ subscribeAll(); wsConnect(id); }
 
 /* ================= РЕЗЕРВНЫЙ КАНАЛ (ntfy.sh, обычный HTTPS) =================
    Работает даже там, где WebSocket/MQTT заблокирован мобильным оператором.
