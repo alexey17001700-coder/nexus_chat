@@ -989,10 +989,8 @@ async function pushMsg(obj){
   addMsg(ch, m, true);
   try {
     const env = await packMsg(ch, m);
-    const payload = JSON.stringify(env);
-    const sent = pub(tMsg(ch), payload);
-    const sentHttp = await ntfyPub(nMsg(ch), payload);
-    if (!sent && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
+    const sent = pub(tMsg(ch), JSON.stringify(env));
+    if (!sent) toast('Нет связи — сообщение пока только у тебя');
     /* история для новых участников: тяжёлые вложения не кладём, иначе брокер рвёт соединение */
     const hist = (store[ch] || []).slice(-40).map(x => {
       if (x.data && x.data.length > 50000) return Object.assign({}, x, { data: '', trimmed: 1 });
