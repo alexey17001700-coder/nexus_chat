@@ -1183,12 +1183,14 @@ setInterval(() => {
     if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'ping' })); } catch(e){} }
   }
 }, 25000);
-/* «кто в сети»: раз в 12 сек спрашиваем у сервера актуальный список участников канала */
+/* «кто в сети»: каждые 5 сек спрашиваем у сервера актуальный список участников канала.
+   Раньше интервал был 12 сек — список успевал устареть, и казалось, что никого нет. */
 setInterval(() => {
-  if (!cur) return;
+  if (!cur || !me) return;
   const s = wsSocks[cur];
   if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'who', room: cur })); } catch(e){} }
-}, 12000);
+  renderOnline();
+}, 5000);
 async function wsOnMessage(room, raw){
   let d; try { d = JSON.parse(raw); } catch(e){ return; }
   lastWsOk = Date.now();
