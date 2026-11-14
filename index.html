@@ -548,6 +548,9 @@ let typingTimers = {};
 let typingSentAt = 0;
 let rec = null, recChunks = [], recTimer = null, recSec = 0;
 let outbox = [];     // очередь сообщений, если связи не было
+let unread = {};     // channelId -> счётчик непрочитанных
+let diag = { lastSend: 0, lastRecv: 0, lastPoll: 0, lastErr: '' };
+const seenSync = new Set();
 let netStarted = Date.now();
 let ntfyAlive = false;   // работает ли резервный HTTP-канал
 let lastHttpOk = 0;      // когда HTTP-канал последний раз отвечал
