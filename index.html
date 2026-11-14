@@ -1072,7 +1072,8 @@ async function ntfyDirPull(){
   res.items.forEach(it => { try { mergeDir(JSON.parse(it.message)); } catch(e){} });
 }
 /* ================= СВОЙ WEBSOCKET НА VIVO =================
-   Основной транспорт: wss://shtab-boss.duckdns.org:8443/ws?room=<канал>
+   Основной транспорт: wss://shtab-boss.duckdns.org:8443/ws
+   Одно соединение на комнату. После открытия отправляем {t:"join", room, id}.
    Сервер держит историю комнаты и рассылает сообщения всем участникам сразу. */
 function wsAlive(){
   for (const k in wsSocks){ const s = wsSocks[k]; if (s && s.readyState === 1) return true; }
