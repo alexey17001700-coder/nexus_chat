@@ -704,10 +704,10 @@ async function onMQTT(topic, payload){
 }
 
 function subscribeChannel(id){
-  if (!client || !client.connected) return;
-  client.subscribe(tHist(id));
-  client.subscribe(tMsg(id));
-  client.subscribe(tType(id));
+  clients.forEach(c => {
+    if (!c.connected) return;
+    try { c.subscribe(tHist(id)); c.subscribe(tMsg(id)); c.subscribe(tType(id)); } catch(e){}
+  });
 }
 
 function addMsg(chId, m, live){
