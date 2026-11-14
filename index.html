@@ -777,6 +777,7 @@ function enterApp(){
   $('drName').textContent = me.nick;
   loadLocalChannels();
   connectMQTT();
+  wsSubAll();
   /* резервный HTTP-канал поднимаем сразу — он не зависит от MQTT */
   ntfySubAll();
   ntfyDirPull();
