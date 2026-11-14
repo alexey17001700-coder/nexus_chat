@@ -1031,6 +1031,7 @@ function renderChannels(){
 function joinChannel(id){
   if (cur === id){ closeDrawer(); return; }
   cur = id;
+  unread[id] = 0;
   localStorage.setItem('nx_last', id);
   const c = channels.find(x => x.id === id);
   $('topName').textContent = c ? (c.ic + ' ' + c.name) : 'Канал';
@@ -1038,6 +1039,7 @@ function joinChannel(id){
   subscribeChannel(id);
   ntfySubAll();
   ntfyHistory(id);
+  askSync(id);
   pollSince = Math.floor(Date.now() / 1000) - 5;
   pollTick();
   renderMsgs();
