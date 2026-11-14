@@ -294,9 +294,11 @@ body::before{
 }
 #emojiModal .sheet-head{flex-shrink:0}
 .emoji-cats{flex-shrink:0}
-.emoji-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
-.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:3px}
-.emoji-grid span{font-size:21px;line-height:1;text-align:center;padding:6px 0;border-radius:10px;cursor:pointer;transition:.15s}
+.emoji-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-right:2px}
+.emoji-scroll::-webkit-scrollbar{width:4px}
+.emoji-scroll::-webkit-scrollbar-thumb{background:rgba(212,175,55,.35);border-radius:9px}
+.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(32px,1fr));gap:2px}
+.emoji-grid span{font-size:19px;line-height:1;text-align:center;padding:5px 0;border-radius:9px;cursor:pointer;transition:.15s}
 .emoji-grid span:active{background:var(--panel2);transform:scale(1.15)}
 .emoji-done{flex-shrink:0;margin-top:12px}
 
