@@ -838,7 +838,7 @@ async function sendTyping(){
   typingSentAt = now;
   if (!client || !client.connected || !cur) return;
   try {
-    const env = E2E ? await encryptObj(secretOf(cur), { id: me.id, nick: me.nick }) : { id: me.id, nick: me.nick };
+    const env = E2E ? Object.assign({ e: 1 }, await encryptObj(secretOf(cur), { id: me.id, nick: me.nick })) : { id: me.id, nick: me.nick };
     client.publish(tType(cur), JSON.stringify(env));
   } catch(e){}
 }
