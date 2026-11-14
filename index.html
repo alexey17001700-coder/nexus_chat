@@ -505,6 +505,19 @@ body::before{
   </div>
 </div>
 
+<!-- online modal -->
+<div class="modal" id="onlineModal" onclick="if(event.target===this)closeOnline()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h3>Кто в сети</h3>
+      <button class="sheet-close" onclick="closeOnline()">✕</button>
+    </div>
+    <div class="sub" id="onlineSub">Участники канала</div>
+    <div id="onlineList"></div>
+  </div>
+</div>
+
 <!-- image viewer -->
 <div id="viewer" onclick="closeViewer()">
   <div class="close">✕</div>
