@@ -1370,7 +1370,7 @@ async function sendTyping(){
     /* «печатает…» шлём по своему WebSocket и MQTT — ntfy.sh имеет лимит запросов,
        и частые публикации блокировали доставку самих сообщений */
     pub(tType(cur), payload);
-    wsPub(cur, { t: 'typ', m: env });
+    wsPub(cur, { t: 'typing', room: cur, nick: me.nick });
   } catch(e){}
 }
 function showTyping(nick){
