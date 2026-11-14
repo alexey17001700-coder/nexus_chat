@@ -1175,6 +1175,12 @@ setInterval(() => {
     if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'ping' })); } catch(e){} }
   }
 }, 25000);
+/* «кто в сети»: раз в 12 сек спрашиваем у сервера актуальный список участников канала */
+setInterval(() => {
+  if (!cur) return;
+  const s = wsSocks[cur];
+  if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'who', room: cur })); } catch(e){} }
+}, 12000);
 async function wsOnMessage(room, raw){
   let d; try { d = JSON.parse(raw); } catch(e){ return; }
   lastWsOk = Date.now();
