@@ -554,6 +554,9 @@ const BROKERS = [
 ];
 /* Резервный канал связи по обычному HTTPS (ntfy.sh).
    Работает даже там, где WebSocket/MQTT заблокирован мобильным оператором. */
+/* СВОЙ WEBSOCKET НА VIVO — основной транспорт.
+   Обычный wss:// на порт 8443 сервера Штаба: проходит там, где MQTT и ntfy.sh заблокированы. */
+const VIVO = 'wss://shtab-boss.duckdns.org:8443/ws';
 const NTFY = 'https://ntfy.sh/';
 const NP = 'nxchat1_';
 const nDir = () => NP + 'dir';
