@@ -1,7 +1,7 @@
 /* Nexus Chat — service worker
    Правило: HTML/JS/CSS ВСЕГДА из сети (cache: 'reload' обходит даже кэш CDN).
    Кэш нужен только как страховка на случай офлайна. */
-const CACHE = 'nexus-chat-v16';
+const CACHE = 'nexus-chat-v17';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon.svg'];
 
 self.addEventListener('install', e => {
