@@ -1296,6 +1296,7 @@ function renderChannels(){
         <div class="cd">${(store[c.id]||[]).length} сообщ.</div>
       </div>
       ${n ? `<span class="badge">${n > 99 ? '99+' : n}</span>` : ''}
+      <button class="chan-del" onclick="event.stopPropagation();askDelete('${c.id}')" title="Удалить канал">🗑</button>
     </div>`;
   }).join('');
 }
