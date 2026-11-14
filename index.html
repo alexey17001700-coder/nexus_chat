@@ -1048,6 +1048,73 @@ async function ntfyDirPull(){
   const res = await ntfyPoll([nDir()], '12h');
   res.items.forEach(it => { try { mergeDir(JSON.parse(it.message)); } catch(e){} });
 }
+/* ================= СВОЙ WEBSOCKET НА VIVO =================
+   Основной транспорт: wss://shtab-boss.duckdns.org:8443/ws?room=<канал>
+   Сервер держит историю комнаты и рассылает сообщения всем участникам сразу. */
+function wsAlive(){ return Date.now() - lastWsOk < 30000; }
+function wsUrl(room){ return VIVO + '?room=' + encodeURIComponent(room); }
+
+function wsConnect(room){
+  if (!room) return;
+  const ex = wsSocks[room];
+  if (ex && (ex.readyState === 0 || ex.readyState === 1)) return;
+  let s;
+  try { s = new WebSocket(wsUrl(room)); } catch(e){ return; }
+  wsSocks[room] = s;
+  s.onopen = () => { lastWsOk = Date.now(); updateNet(); log('WS подключён: ' + room); };
+  s.onmessage = e => { wsOnMessage(room, e.data); };
+  s.onclose = () => {
+    if (wsSocks[room] === s) delete wsSocks[room];
+    updateNet();
+    clearTimeout(wsRetry[room]);
+    wsRetry[room] = setTimeout(() => wsConnect(room), 3000);
+  };
+  s.onerror = () => { try { s.close(); } catch(e){} };
+}
+function wsSubAll(){
+  wsConnect('directory');
+  channels.forEach(c => wsConnect(c.id));
+  if (cur) wsConnect(cur);
+}
+function wsPub(room, obj){
+  if (!room) return false;
+  const s = wsSocks[room];
+  if (s && s.readyState === 1){
+    try { s.send(JSON.stringify(obj)); lastWsOk = Date.now(); return true; } catch(e){}
+  }
+  wsConnect(room);
+  return false;
+}
+async function wsOnMessage(room, raw){
+  let d; try { d = JSON.parse(raw); } catch(e){ return; }
+  lastWsOk = Date.now();
+  updateNet();
+  if (d && d.t === 'hist'){
+    for (const it of (d.items || [])){
+      let x; try { x = JSON.parse(it); } catch(e){ continue; }
+      await wsDispatch(room, x);
+    }
+    if (room === cur) renderMsgs();
+    return;
+  }
+  await wsDispatch(room, d);
+}
+async function wsDispatch(room, d){
+  if (!d || !d.t) return;
+  if (d.t === 'dir'){ mergeDir(d.items); return; }
+  if (d.t === 'msg'){
+    const m = await unpackMsg(room, d.m);
+    if (m) addMsg(room, m, true);
+    return;
+  }
+  if (d.t === 'typ'){
+    const t = await unpackMsg(room, d.m);
+    if (!t || t.id === me.id || room !== cur) return;
+    showTyping(t.nick);
+    return;
+  }
+}
+
 function mergeDir(d){
   if (!Array.isArray(d) || !d.length) return;
   /* объединяем справочник: свои каналы не теряем, чужие добавляем вместе с ключом */
