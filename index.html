@@ -727,19 +727,20 @@ function connectBroker(url){
   clients.push(c);
   c.on('connect', () => {
     updateNet();
-    c.subscribe(T_DIR);
-    if (cur){ c.subscribe(tHist(cur)); c.subscribe(tMsg(cur)); c.subscribe(tType(cur)); }
+    c.subscribe(T_DIR, { qos: 1 });
+    subscribeAll();
     flushOutbox();
+    log('MQTT подключён: ' + url);
   });
   c.on('reconnect', updateNet);
   c.on('close', updateNet);
-  c.on('error', updateNet);
+  c.on('error', () => { updateNet(); log('MQTT ошибка: ' + url); });
   c.on('message', onMQTT);
 }
 /* публикуем во все узлы — сообщение дойдёт, даже если устройства сидят на разных брокерах */
 function pub(topic, payload, opts){
   let sent = 0;
-  clients.forEach(c => { if (c.connected){ try { c.publish(topic, payload, opts || {}); sent++; } catch(e){} } });
+  clients.forEach(c => { if (c.connected){ try { c.publish(topic, payload, Object.assign({ qos: 1 }, opts || {})); sent++; } catch(e){} } });
   // связи не было — придержим сообщение и отправим, как только подключимся
   if (!sent && topic.indexOf(BASE + 'msg_') === 0) outbox.push({ topic, payload });
   return sent;
