@@ -1155,6 +1155,27 @@ async function pushMsg(obj){
   return m;
 }
 
+/* Просим участников канала прислать историю — на случай, если retained не дошёл */
+function askSync(chId){
+  if (!chId) return;
+  const req = JSON.stringify({ from: me.id, at: Date.now() });
+  pub(tSync(chId), req);
+  ntfyPub(nSync(chId), req);
+}
+/* История для новых участников: ТОЛЬКО текст, максимум 20 сообщений.
+   Вложения не кладём — иначе пакет превышает лимит брокера и связь рвётся. */
+async function sendHistory(chId){
+  try {
+    const hist = (store[chId] || []).filter(x => x.type === 'text').slice(-20);
+    if (!hist.length) return;
+    const envHist = await Promise.all(hist.map(x => packMsg(chId, x)));
+    const payload = JSON.stringify(envHist);
+    if (payload.length > 60000) return;
+    pub(tHist(chId), payload, { retain: true });
+    log('→ история "' + chId + '": ' + hist.length + ' сообщ.');
+  } catch(e){}
+}
+
 function sendText(){
   const el = $('inMsg');
   const txt = el.value.trim();
