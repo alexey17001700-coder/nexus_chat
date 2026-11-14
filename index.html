@@ -1285,9 +1285,10 @@ async function pushMsg(obj){
     const env = await packMsg(ch, m);
     const payload = JSON.stringify(env);
     const sent = pub(tMsg(ch), payload);
+    const sentWs = wsPub(ch, { t: 'msg', m: env });
     const sentHttp = await ntfyPub(nMsg(ch), payload);
-    log('→ отправка в "' + ch + '": MQTT ' + sent + '/' + clients.length + ', HTTP ' + (sentHttp ? 'ок' : 'нет'));
-    if (!sent && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
+    log('→ отправка в "' + ch + '": Vivo ' + (sentWs ? 'ок' : 'нет') + ', MQTT ' + sent + '/' + clients.length + ', HTTP ' + (sentHttp ? 'ок' : 'нет'));
+    if (!sent && !sentWs && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
     await sendHistory(ch);
   } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); log('! ошибка отправки: ' + e); }
   return m;
