@@ -678,6 +678,8 @@ function openDiag(){
   const live = clients.filter(c => c.connected).length;
   log('канал: ' + cur + ' · сообщений: ' + ((store[cur] || []).length));
   log('MQTT: ' + live + '/' + BROKERS.length + ' · HTTP: ' + (ntfyAlive ? 'ок' : 'нет'));
+  const pe = pushEnv();
+  log('push: разрешение=' + pe.perm + ' · ключ=' + (vapidKey ? 'есть' : 'нет') + ' · подписка=' + (pushSub ? 'есть' : 'нет'));
   $('diag').classList.add('on');
 }
 function closeDiag(){ $('diag').classList.remove('on'); }
