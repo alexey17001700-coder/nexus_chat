@@ -544,6 +544,23 @@ function hueOf(s){ let h = 0; for (let i=0;i<s.length;i++) h = (h*31 + s.charCod
 function colorOf(s){ return `hsl(${hueOf(s)},72%,62%)`; }
 function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('on'), 2400); }
 
+/* ================= ДИАГНОСТИКА СВЯЗИ ================= */
+var diagLines = [];
+function log(s){
+  const t = new Date().toLocaleTimeString('ru-RU');
+  diagLines.push(t + '  ' + s);
+  if (diagLines.length > 150) diagLines.shift();
+  const el = $('diagLog');
+  if (el) el.textContent = diagLines.join('\n');
+}
+function openDiag(){
+  const live = clients.filter(c => c.connected).length;
+  log('канал: ' + cur + ' · сообщений: ' + ((store[cur] || []).length));
+  log('MQTT: ' + live + '/' + BROKERS.length + ' · HTTP: ' + (ntfyAlive ? 'ок' : 'нет'));
+  $('diag').classList.add('on');
+}
+function closeDiag(){ $('diag').classList.remove('on'); }
+
 /* ================= SNOW ================= */
 (function snow(){
   const c = $('snow'), x = c.getContext('2d');
