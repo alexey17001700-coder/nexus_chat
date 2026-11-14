@@ -1663,10 +1663,59 @@ function insEmoji(e){
 function closeEmoji(){ $('emojiModal').classList.remove('on'); }
 
 /* ================= КТО В СЕТИ ================= */
+/* Список собирается из ТРЁХ источников — чтобы работал всегда:
+   1) серверные пакеты presence / welcome / who — точный список соединений
+   2) presence-пульс: каждый участник раз в 20 сек шлёт короткий зашифрованный
+      пакет {kind:"presence"}. Конверт помечен kind:"typing", поэтому сервер
+      НЕ пишет его в историю, а все в канале видят, что человек онлайн
+   3) живые следы от обычных сообщений и статуса «печатает…» */
+const seenNick = {};   // chId -> { nick: время последнего сигнала }
+const NICK_TTL = 45000;
+
+function markNick(chId, nick){
+  if (!chId || !nick || !me || nick === me.nick) return;
+  if (!seenNick[chId]) seenNick[chId] = {};
+  seenNick[chId][nick] = Date.now();
+}
+function onlineList(){
+  if (!cur) return [];
+  const out = [], have = new Set();
+  const add = (nick, id) => {
+    const n = nick || 'Гость';
+    if (have.has(n)) return;
+    have.add(n); out.push({ nick: n, id: id || '' });
+  };
+  (online[cur] || []).forEach(u => add(u.nick, u.id));
+  const seen = seenNick[cur] || {};
+  const now = Date.now();
+  Object.keys(seen).forEach(n => { if (now - seen[n] > NICK_TTL) delete seen[n]; else add(n, ''); });
+  if (me) add(me.nick, me.id);
+  return out;
+}
+/* presence-пульс: короткий зашифрованный пакет «я тут».
+   Конверт помечаем kind:"typing" — сервер такие пакеты в историю не пишет. */
+async function presencePing(){
+  if (!cur || !me) return;
+  try {
+    const env = await packMsg(cur, { id: uid(), nick: me.nick, kind: 'presence', time: Date.now() });
+    env.kind = 'typing';
+    wsPub(cur, { t: 'msg', room: cur, d: env });
+    pub(tMsg(cur), JSON.stringify(env));
+  } catch(e){}
+}
+/* приём пульса: расшифровываем только ради ника, в чат не добавляем */
+async function takePresence(chId, env){
+  try {
+    const p = await decryptObj(secretOf(chId), env);
+    if (p && p.nick){ markNick(chId, p.nick); if (chId === cur) renderOnline(); }
+  } catch(e){ /* чужой ключ — молча игнорируем */ }
+}
+setInterval(() => { if (cur) presencePing(); }, 20000);
+
 function renderOnline(){
-  const list = (cur && online[cur]) ? online[cur] : [];
-  const chip = $('onlineChip');
-  if (chip) chip.textContent = '👥 ' + list.length;
+  const list = onlineList();
+  const num = $('onlineNum');
+  if (num) num.textContent = list.length;
   const box = $('onlineList');
   if (!box) return;
   const c = channels.find(x => x.id === cur);
