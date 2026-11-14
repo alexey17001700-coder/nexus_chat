@@ -1092,7 +1092,7 @@ function wsConnect(room){
   s.onerror = () => { try { s.close(); } catch(e){} };
 }
 function wsSubAll(){
-  wsConnect('directory');
+  wsConnect('__dir__');
   channels.forEach(c => wsConnect(c.id));
   if (cur) wsConnect(cur);
 }
