@@ -507,6 +507,62 @@ function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'
   })();
 })();
 
+/* ================= E2E ENCRYPTION (AES-256-GCM) ================= */
+const E2E = !!(window.crypto && window.crypto.subtle);
+const keyCache = new Map();
+
+function b64(u8){
+  let s = ''; const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH));
+  return btoa(s);
+}
+function unb64(str){ return Uint8Array.from(atob(str), c => c.charCodeAt(0)); }
+function randSecret(){
+  const a = crypto.getRandomValues(new Uint8Array(24));
+  return b64(a).replace(/[^A-Za-z0-9]/g, '').slice(0, 32);
+}
+function secretOf(chId){
+  const c = channels.find(x => x.id === chId);
+  return (c && c.sec) ? c.sec : ('nx-default-' + chId);
+}
+async function getKey(secret){
+  if (keyCache.has(secret)) return keyCache.get(secret);
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(secret), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode('nexus-e2e-salt-v1'), iterations: 120000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  keyCache.set(secret, key);
+  return key;
+}
+async function encryptObj(secret, obj){
+  const key = await getKey(secret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return { iv: b64(iv), d: b64(new Uint8Array(ct)) };
+}
+async function decryptObj(secret, p){
+  const key = await getKey(secret);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(p.iv) }, key, unb64(p.d));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+/* упаковка: id и время открыты (для сортировки/дублей), весь контент — шифр */
+async function packMsg(chId, m){
+  if (!E2E) return m;
+  const { id, time, ...secret } = m;
+  const enc = await encryptObj(secretOf(chId), secret);
+  return { id, time, e: 1, iv: enc.iv, d: enc.d };
+}
+async function unpackMsg(chId, p){
+  if (!p || p.e !== 1) return p;
+  try {
+    const sec = await decryptObj(secretOf(chId), p);
+    return Object.assign({ id: p.id, time: p.time }, sec);
+  } catch(e){
+    return { id: p.id || uid(), time: p.time || Date.now(), type: 'sys', text: '🔒 Сообщение зашифровано другим ключом' };
+  }
+}
+
 /* ================= AUTH ================= */
 let authMode = 'login';
 function switchTab(m){
