@@ -427,7 +427,10 @@ body::before{
 <div class="modal" id="createModal" onclick="if(event.target===this)closeCreate()">
   <div class="sheet">
     <div class="grab"></div>
-    <h3>Новый канал</h3>
+    <div class="sheet-head">
+      <h3>Новый канал</h3>
+      <button class="sheet-close" onclick="closeCreate()">✕</button>
+    </div>
     <div class="sub">Создай канал — другие смогут к нему присоединиться</div>
     <div class="field">
       <label>Название канала</label>
