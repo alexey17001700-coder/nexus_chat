@@ -554,8 +554,20 @@ const BROKERS = [
 ];
 /* Резервный канал связи по обычному HTTPS (ntfy.sh).
    Работает даже там, где WebSocket/MQTT заблокирован мобильным оператором. */
-/* СВОЙ WEBSOCKET НА VIVO — основной транспорт.
-   Обычный wss:// на порт 8443 сервера Штаба: проходит там, где MQTT и ntfy.sh заблокированы. */
+/* СВОЙ WEBSOCKET НА VIVO — основной транспорт (сервер nexus_ws/main.ts).
+   Обычный wss:// на порт 8443: проходит там, где MQTT и ntfy.sh заблокированы.
+   Протокол сервера (JSON):
+     → {t:"join", room, id}                  войти в комнату
+     → {t:"msg", room, d}                    сообщение (d — зашифрованный конверт)
+     → {t:"typing", room, nick}              «печатает…»
+     → {t:"dir", d:[...]}                    справочник каналов (комната __dir__)
+     → {t:"ping"} / {t:"pong"}               keep-alive
+     ← {t:"hello"|"welcome"|"presence"}      служебные
+     ← {t:"history", room, items:[...]}      история комнаты при входе
+     ← {t:"msg", room, d}                    входящее сообщение
+     ← {t:"typing", room, nick}              кто-то печатает
+     ← {t:"dir", room, d}                    обновление справочника
+     ← {t:"error", error}                    ошибка */
 const VIVO = 'wss://shtab-boss.duckdns.org:8443/ws';
 const NTFY = 'https://ntfy.sh/';
 const NP = 'nxchat1_';
