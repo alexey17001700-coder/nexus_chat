@@ -1237,6 +1237,7 @@ function joinChannel(id){
   $('topName').textContent = c ? (c.ic + ' ' + c.name) : 'Канал';
   if (!store[id]){ store[id] = []; seen[id] = new Set(); }
   subscribeChannel(id);
+  wsConnect(id);
   ntfySubAll();
   ntfyHistory(id);
   askSync(id);
