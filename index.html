@@ -725,7 +725,7 @@ function enterApp(){
   /* резервный HTTP-канал поднимаем сразу — он не зависит от MQTT */
   ntfySubAll();
   ntfyDirPull();
-  if (cur) ntfyHistory(cur);
+  if (cur){ ntfyHistory(cur); askSync(cur); }
   pollSince = Math.floor(Date.now() / 1000) - 5;
   startPolling();
   log('старт: канал=' + cur + ', каналов=' + channels.length);
