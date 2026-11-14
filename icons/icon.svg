@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1424"/>
+      <stop offset="1" stop-color="#070a12"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7e7a8"/>
+      <stop offset="0.45" stop-color="#d4af37"/>
+      <stop offset="1" stop-color="#a67c1a"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bfeaff"/>
+      <stop offset="1" stop-color="#3aa7d9"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="url(#gold)" stroke-width="3" opacity="0.35"/>
+
+  <!-- bubble -->
+  <g filter="url(#glow)">
+    <path d="M256 118c-79 0-143 55-143 123 0 39 21 73 55 96l-14 57 63-33c12 3 25 4 39 4 79 0 143-55 143-124S335 118 256 118z"
+          fill="url(#gold)"/>
+  </g>
+
+  <!-- dots -->
+  <circle cx="196" cy="242" r="17" fill="#0a0f1d"/>
+  <circle cx="256" cy="242" r="17" fill="#0a0f1d"/>
+  <circle cx="316" cy="242" r="17" fill="#0a0f1d"/>
+
+  <!-- snowflake -->
+  <g stroke="url(#ice)" stroke-width="9" stroke-linecap="round" filter="url(#glow)" opacity="0.95">
+    <line x1="256" y1="330" x2="256" y2="404"/>
+    <line x1="224" y1="348" x2="288" y2="386"/>
+    <line x1="288" y1="348" x2="224" y2="386"/>
+  </g>
+</svg>
