@@ -1032,14 +1032,18 @@ function saveChannels(){ localStorage.setItem('nx_chans', JSON.stringify(channel
 
 function renderChannels(){
   const box = $('chanList');
-  box.innerHTML = channels.map(c => `
+  box.innerHTML = channels.map(c => {
+    const n = unread[c.id] || 0;
+    return `
     <div class="chan ${c.id===cur?'on':''}" onclick="joinChannel('${c.id}')">
       <div class="ci">${esc(c.ic || '💬')}</div>
-      <div style="min-width:0">
+      <div style="min-width:0;flex:1">
         <div class="cn">${esc(c.name)}</div>
         <div class="cd">${(store[c.id]||[]).length} сообщ.</div>
       </div>
-    </div>`).join('');
+      ${n ? `<span class="badge">${n > 99 ? '99+' : n}</span>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function joinChannel(id){
