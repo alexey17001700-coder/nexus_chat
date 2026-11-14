@@ -1274,7 +1274,7 @@ function mergeDir(d){
          остаётся в памяти (сообщения, счётчик, список «в сети») */
       deleted.add(c.id);
       map.delete(c.id);
-      delete store[c.id]; delete seen[c.id]; delete unread[c.id]; delete online[c.id];
+      delete store[c.id]; delete seen[c.id]; delete unread[c.id]; delete online[c.id]; delete members[c.id];
       try { if (wsSocks[c.id]){ wsSocks[c.id].close(); delete wsSocks[c.id]; } } catch(e){}
       return;
     }
