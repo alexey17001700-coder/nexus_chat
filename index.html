@@ -1853,6 +1853,131 @@ function tourPrev(){ if (tourIdx > 0){ tourIdx--; renderTour(); } }
 function tourGo(i){ tourIdx = i; renderTour(); }
 function endTour(){ $('tour').classList.remove('on'); localStorage.setItem('nx_tour', '1'); }
 
+/* ================= WEB PUSH (уведомления браузера) =================
+   Как работает:
+   1) сервер отдаёт ПУБЛИЧНЫЙ VAPID-ключ в пакете hello (приватный не покидает Vivo)
+   2) человек жмёт «🔔 Уведомления» в меню ☰ → браузер спрашивает разрешение
+   3) PushManager.subscribe() создаёт подписку устройства
+   4) подписка уходит на сервер по уже открытому WebSocket ({t:'sub'})
+      + дублируется POST /subscribe (если Caddy проксирует этот путь)
+   5) сервер шлёт push, когда в канале появляется сообщение, а человек не в чате
+   Важно: содержимое НЕ передаётся — только «💬 Новое сообщение». Шифрование не ломается. */
+let vapidKey = '';
+let pushSub = null;
+
+function pushSupported(){
+  return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+}
+/* VAPID-ключ приходит в base64url — PushManager ждёт Uint8Array */
+function urlB64ToU8(base64){
+  const pad = '='.repeat((4 - (base64.length % 4)) % 4);
+  const s = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(s);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+function pushBtnUI(){
+  const b = $('pushBtn');
+  if (!b) return;
+  if (!pushSupported()){ b.textContent = '🔕 Не поддерживается'; b.disabled = true; return; }
+  if (!vapidKey){ b.textContent = '🔔 Уведомления…'; return; }
+  if (Notification.permission === 'denied'){ b.textContent = '🔕 Запрещены'; return; }
+  b.textContent = pushSub ? '🔔 Уведомления: вкл' : '🔔 Уведомления: выкл';
+}
+/* сервер сообщил публичный ключ */
+function onVapid(key){
+  if (!key) return;
+  const changed = vapidKey !== key;
+  vapidKey = key;
+  pushBtnUI();
+  /* разрешение уже выдано ранее — подписку восстанавливаем молча, без вопросов */
+  if (changed && Notification.permission === 'granted') ensurePush();
+}
+function sendSubTo(room){
+  if (!pushSub) return;
+  const s = wsSocks[room];
+  if (!s || s.readyState !== 1) return;
+  try {
+    s.send(JSON.stringify({
+      t: 'sub', room, nick: me ? me.nick : '',
+      d: pushSub.toJSON ? pushSub.toJSON() : { endpoint: pushSub.endpoint }
+    }));
+  } catch(e){}
+}
+/* создаём/восстанавливаем подписку и отправляем её на сервер */
+async function ensurePush(){
+  if (!pushSupported() || !vapidKey) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToU8(vapidKey) });
+    }
+    pushSub = sub;
+    /* по WebSocket — по каждому открытому каналу */
+    Object.keys(wsSocks).forEach(r => sendSubTo(r));
+    /* и по HTTP — на случай, если Caddy проксирует /subscribe */
+    try {
+      const rooms = channels.map(c => c.id);
+      fetch(vivoHttp() + '/subscribe', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sub: sub.toJSON ? sub.toJSON() : { endpoint: sub.endpoint }, rooms, nick: me ? me.nick : '' })
+      }).catch(() => {});
+    } catch(e){}
+    pushBtnUI();
+    log('push: подписка отправлена на сервер');
+  } catch(e){
+    log('! push: ' + e);
+    pushBtnUI();
+  }
+}
+/* базовый https-адрес того же сервера (wss://…/ws → https://…) */
+function vivoHttp(){ return VIVO.replace(/^ws/, 'http').replace(/\/ws$/, ''); }
+
+async function togglePush(){
+  if (!pushSupported()){ toast('Этот браузер не умеет уведомления'); return; }
+  if (!vapidKey){ toast('Сервер уведомлений ещё не ответил — попробуй через пару секунд'); return; }
+  if (Notification.permission === 'denied'){ toast('Уведомления запрещены в настройках браузера'); return; }
+  /* уже включены — выключаем */
+  if (Notification.permission === 'granted' && pushSub){ await pushOff(); return; }
+  let perm = Notification.permission;
+  if (perm !== 'granted') perm = await Notification.requestPermission();
+  if (perm !== 'granted'){ toast('Разрешение не выдано'); pushBtnUI(); return; }
+  await ensurePush();
+  toast(pushSub ? 'Уведомления включены 🔔' : 'Не удалось включить уведомления');
+}
+async function pushOff(){
+  const ep = pushSub ? pushSub.endpoint : '';
+  try { if (pushSub) await pushSub.unsubscribe(); } catch(e){}
+  pushSub = null;
+  Object.keys(wsSocks).forEach(r => {
+    const s = wsSocks[r];
+    if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'unsub', d: { endpoint: ep } })); } catch(e){} }
+  });
+  try {
+    fetch(vivoHttp() + '/unsubscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: ep })
+    }).catch(() => {});
+  } catch(e){}
+  pushBtnUI();
+  toast('Уведомления выключены 🔕');
+}
+/* тап по уведомлению в трее — открываем нужный канал */
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', e => {
+    const d = e.data || {};
+    if (d.type === 'open-room' && d.room && channels.find(c => c.id === d.room)) joinChannel(d.room);
+  });
+}
+/* подстраховка: разрешение выдано, а подписки нет (например, после переустановки) */
+setInterval(() => {
+  if (!vapidKey || !pushSupported()) return;
+  if (Notification.permission === 'granted' && !pushSub) ensurePush();
+}, 60000);
+
 /* ================= BOOT ================= */
 (function boot(){
   try {
