@@ -1783,16 +1783,23 @@ function endTour(){ $('tour').classList.remove('on'); localStorage.setItem('nx_t
 
 /* service worker: авто-обновление — новая версия подхватывается сама */
 if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  /* updateViaCache:'none' — sw.js ВСЕГДА тянется из сети, минуя HTTP-кэш браузера
+     и кэш CDN GitHub Pages. Без этого телефон мог неделями сидеть на старом файле. */
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(()=>{});
   let reloaded = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (reloaded) return;
     reloaded = true;
     location.reload();
   });
+  /* проверяем новую версию каждые 30 сек и сразу после возврата в приложение */
   setInterval(() => {
     navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(()=>{});
-  }, 60000);
+  }, 30000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(()=>{});
+  });
 }
 
 /* Esc закрывает модалки (удобно при тесте с компьютера) */
