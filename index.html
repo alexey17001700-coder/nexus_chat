@@ -1269,6 +1269,7 @@ function loadLocalChannels(){
   joinChannel(channels.find(c=>c.id===last) ? last : channels[0].id);
 }
 function saveChannels(){ localStorage.setItem('nx_chans', JSON.stringify(channels)); }
+function saveDeleted(){ try { localStorage.setItem('nx_deleted', JSON.stringify(Array.from(deleted))); } catch(e){} }
 
 function renderChannels(){
   const box = $('chanList');
