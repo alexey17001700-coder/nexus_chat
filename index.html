@@ -660,6 +660,7 @@ function connectBroker(url){
     updateNet();
     c.subscribe(T_DIR);
     if (cur){ c.subscribe(tHist(cur)); c.subscribe(tMsg(cur)); c.subscribe(tType(cur)); }
+    flushOutbox();
   });
   c.on('reconnect', updateNet);
   c.on('close', updateNet);
