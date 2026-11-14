@@ -1066,17 +1066,19 @@ function wsAlive(){
   for (const k in wsSocks){ const s = wsSocks[k]; if (s && s.readyState === 1) return true; }
   return Date.now() - lastWsOk < 30000;
 }
-function wsUrl(room){ return VIVO + '?room=' + encodeURIComponent(room); }
+function wsUrl(){ return VIVO; }
 
 function wsConnect(room){
   if (!room) return;
   const ex = wsSocks[room];
   if (ex && (ex.readyState === 0 || ex.readyState === 1)) return;
   let s;
-  try { s = new WebSocket(wsUrl(room)); } catch(e){ return; }
+  try { s = new WebSocket(wsUrl()); } catch(e){ return; }
   wsSocks[room] = s;
   s.onopen = () => {
     lastWsOk = Date.now(); updateNet(); log('WS подключён: ' + room);
+    /* сервер nexus_ws ждёт явный join комнаты: {t:"join", room, id} */
+    try { s.send(JSON.stringify({ t: 'join', room, id: me.id })); } catch(e){}
     const q = wsOutbox[room];
     if (q && q.length){ wsOutbox[room] = []; q.forEach(o => { try { s.send(JSON.stringify(o)); } catch(e){} }); }
   };
