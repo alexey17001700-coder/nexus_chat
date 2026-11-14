@@ -890,7 +890,7 @@ async function onMQTT(topic, payload){
 function subscribeAll(){
   const ids = channels.map(c => c.id);
   if (cur && ids.indexOf(cur) < 0) ids.push(cur);
-  wsConnect('directory');
+  wsConnect('__dir__');
   ids.forEach(id => wsConnect(id));
   clients.forEach(c => {
     if (!c.connected) return;
