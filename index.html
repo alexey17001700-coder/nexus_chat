@@ -1276,6 +1276,9 @@ function mergeDir(d){
 }
 
 function addMsg(chId, m, live){
+  if (!m) return;
+  /* живой след: кто-то писал в канал — значит он в сети */
+  markNick(chId, m.nick);
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
   if (seen[chId].has(m.id)) return;
   seen[chId].add(m.id);
