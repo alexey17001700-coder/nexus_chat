@@ -832,6 +832,7 @@ function subscribeAll(){
         c.subscribe(tHist(id), { qos: 1 });
         c.subscribe(tMsg(id), { qos: 1 });
         c.subscribe(tType(id));
+        c.subscribe(tSync(id));
       } catch(e){}
     });
   });
