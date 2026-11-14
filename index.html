@@ -631,7 +631,7 @@ async function testLink(){
     const env = await packMsg(cur, m);
     const payload = JSON.stringify(env);
     const sent = pub(tMsg(cur), payload);
-    const sentWs = wsPub(cur, { t: 'msg', m: env });
+    const sentWs = wsPub(cur, { t: 'msg', room: cur, d: env });
     const http = await ntfyPub(nMsg(cur), payload);
     log('ТЕСТ: отправлено Vivo ' + (sentWs ? 'ок' : 'нет') + ', MQTT ' + sent + ', HTTP ' + (http ? 'ок' : 'нет'));
     toast((sent || sentWs || http) ? 'Тест отправлен — проверь второе устройство' : 'Связи нет!');
