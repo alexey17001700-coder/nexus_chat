@@ -795,9 +795,13 @@ async function onMQTT(topic, payload){
   let d; try { d = JSON.parse(payload.toString()); } catch(e){ return; }
 
   if (topic === T_DIR){ mergeDir(d); return; }
-  const chId = topic.replace(BASE, '').replace(/^(hist_|msg_|typ_)/, '');
+  const chId = topic.replace(BASE, '').replace(/^(hist_|msg_|typ_|sync_)/, '');
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
 
+  if (topic.startsWith(BASE + 'sync_')){
+    if (d && d.from !== me.id) sendHistory(chId);
+    return;
+  }
   if (topic.startsWith(BASE + 'hist_')){
     if (Array.isArray(d)){
       for (const env of d){
