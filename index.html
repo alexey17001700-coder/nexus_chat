@@ -1271,6 +1271,7 @@ function joinChannel(id){
   if (!store[id]){ store[id] = []; seen[id] = new Set(); }
   subscribeChannel(id);
   wsConnect(id);
+  wsPub(id, { t: 'who', room: id });   // спросим у сервера, кто уже в канале
   ntfySubAll();
   ntfyHistory(id);
   askSync(id);
@@ -1278,6 +1279,7 @@ function joinChannel(id){
   pollTick();
   renderMsgs();
   renderChannels();
+  renderOnline();
   closeDrawer();
 }
 
