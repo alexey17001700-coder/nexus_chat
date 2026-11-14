@@ -841,15 +841,18 @@ async function pushMsg(obj){
   const ch = cur;
   const m = Object.assign({ id: uid(), id_user: me.id, nick: me.nick, color: me.color, time: Date.now() }, obj);
   addMsg(ch, m, true);
-  if (client && client.connected){
-    try {
-      const env = await packMsg(ch, m);
-      client.publish(tMsg(ch), JSON.stringify(env));
-      const hist = (store[ch] || []).slice(-60);
-      const envHist = await Promise.all(hist.map(x => packMsg(ch, x)));
-      client.publish(tHist(ch), JSON.stringify(envHist), { retain: true });
-    } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); }
-  }
+  try {
+    const env = await packMsg(ch, m);
+    const sent = pub(tMsg(ch), JSON.stringify(env));
+    if (!sent) toast('Нет связи — сообщение пока только у тебя');
+    /* история для новых участников: тяжёлые вложения не кладём, иначе брокер рвёт соединение */
+    const hist = (store[ch] || []).slice(-40).map(x => {
+      if (x.data && x.data.length > 50000) return Object.assign({}, x, { data: '', trimmed: 1 });
+      return x;
+    });
+    const envHist = await Promise.all(hist.map(x => packMsg(ch, x)));
+    pub(tHist(ch), JSON.stringify(envHist), { retain: true });
+  } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); }
   return m;
 }
 
