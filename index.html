@@ -1095,7 +1095,7 @@ function wsConnect(room){
   s.onopen = () => {
     lastWsOk = Date.now(); wsTries[room] = 0; updateNet(); log('WS подключён: ' + room);
     /* сервер nexus_ws ждёт явный join комнаты: {t:"join", room, id} */
-    try { s.send(JSON.stringify({ t: 'join', room, id: me.id })); } catch(e){}
+    try { s.send(JSON.stringify({ t: 'join', room, id: me.id, nick: me.nick })); } catch(e){}
     const q = wsOutbox[room];
     if (q && q.length){ wsOutbox[room] = []; q.forEach(o => { try { s.send(JSON.stringify(o)); } catch(e){} }); }
   };
