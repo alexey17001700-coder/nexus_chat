@@ -608,6 +608,22 @@ function openDiag(){
   $('diag').classList.add('on');
 }
 function closeDiag(){ $('diag').classList.remove('on'); }
+/* тест: отправляем служебное сообщение и смотрим, дошло ли до второго устройства */
+async function testLink(){
+  if (!cur){ toast('Сначала выбери канал'); return; }
+  const live = clients.filter(c => c.connected).length;
+  log('ТЕСТ: MQTT ' + live + '/' + BROKERS.length + ', HTTP ' + (ntfyAlive ? 'ок' : 'нет'));
+  const m = { id: uid(), id_user: me.id, nick: me.nick, color: me.color, time: Date.now(), type: 'text', text: '🧪 Тест связи от ' + me.nick };
+  addMsg(cur, m, true);
+  try {
+    const env = await packMsg(cur, m);
+    const payload = JSON.stringify(env);
+    const sent = pub(tMsg(cur), payload);
+    const http = await ntfyPub(nMsg(cur), payload);
+    log('ТЕСТ: отправлено MQTT ' + sent + ', HTTP ' + (http ? 'ок' : 'нет'));
+    toast((sent || http) ? 'Тест отправлен — проверь второе устройство' : 'Связи нет!');
+  } catch(e){ log('ТЕСТ: ошибка ' + e); }
+}
 
 /* ================= SNOW ================= */
 (function snow(){
