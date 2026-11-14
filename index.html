@@ -1319,7 +1319,7 @@ async function pushMsg(obj){
     const env = await packMsg(ch, m);
     const payload = JSON.stringify(env);
     const sent = pub(tMsg(ch), payload);
-    const sentWs = wsPub(ch, { t: 'msg', m: env });
+    const sentWs = wsPub(ch, { t: 'msg', room: ch, d: env });
     const sentHttp = await ntfyPub(nMsg(ch), payload);
     log('→ отправка в "' + ch + '": Vivo ' + (sentWs ? 'ок' : 'нет') + ', MQTT ' + sent + '/' + clients.length + ', HTTP ' + (sentHttp ? 'ок' : 'нет'));
     if (!sent && !sentWs && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
