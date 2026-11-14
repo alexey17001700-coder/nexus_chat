@@ -625,7 +625,7 @@ function closeDiag(){ $('diag').classList.remove('on'); }
 async function testLink(){
   if (!cur){ toast('Сначала выбери канал'); return; }
   const live = clients.filter(c => c.connected).length;
-  log('ТЕСТ: MQTT ' + live + '/' + BROKERS.length + ', HTTP ' + (ntfyAlive ? 'ок' : 'нет'));
+  log('ТЕСТ: Vivo ' + (wsAlive() ? 'ок' : 'нет') + ', MQTT ' + live + '/' + BROKERS.length + ', HTTP ' + (ntfyAlive ? 'ок' : 'нет'));
   const m = { id: uid(), id_user: me.id, nick: me.nick, color: me.color, time: Date.now(), type: 'text', text: '🧪 Тест связи от ' + me.nick };
   addMsg(cur, m, true);
   try {
