@@ -413,10 +413,13 @@ body::before{
 <div class="modal" id="emojiModal" onclick="if(event.target===this)closeEmoji()">
   <div class="sheet">
     <div class="grab"></div>
-    <h3>Смайлики</h3>
+    <div class="sheet-head">
+      <h3>Смайлики</h3>
+      <button class="sheet-close" onclick="closeEmoji()">✕</button>
+    </div>
     <div class="sub">Тапни, чтобы вставить в сообщение</div>
     <div class="emoji-cats" id="emojiCats"></div>
-    <div class="emoji-grid" id="emojiGrid"></div>
+    <div class="emoji-scroll"><div class="emoji-grid" id="emojiGrid"></div></div>
   </div>
 </div>
 
