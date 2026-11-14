@@ -1,0 +1,20 @@
+{
+  "name": "Nexus Chat — Premium Messenger",
+  "short_name": "Nexus Chat",
+  "description": "Премиум-чат: каналы, смайлики, фото, файлы и голосовые сообщения",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
