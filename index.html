@@ -1228,12 +1228,25 @@ async function wsDispatch(room, d){
 
 function mergeDir(d){
   if (!Array.isArray(d) || !d.length) return;
-  /* объединяем справочник: свои каналы не теряем, чужие добавляем вместе с ключом */
+  /* объединяем справочник: свои каналы не теряем, чужие добавляем вместе с ключом.
+     Метка {id, del:true} — канал удалён: запоминаем в tombstone и убираем из списка,
+     чтобы он не вернулся из старой истории справочника. */
   const map = new Map(channels.map(c => [c.id, c]));
-  d.forEach(c => { if (c && c.id) map.set(c.id, Object.assign({}, map.get(c.id) || {}, c)); });
+  d.forEach(c => {
+    if (!c || !c.id) return;
+    if (c.del){ deleted.add(c.id); map.delete(c.id); return; }
+    if (deleted.has(c.id)) return;
+    map.set(c.id, Object.assign({}, map.get(c.id) || {}, c));
+  });
   channels = Array.from(map.values());
   saveChannels();
+  saveDeleted();
   renderChannels();
+  /* текущий канал удалён кем-то — переключаемся на первый доступный */
+  if (cur && !channels.find(c => c.id === cur)){
+    if (channels.length) joinChannel(channels[0].id);
+    else { cur = null; $('topName').textContent = 'Каналы'; renderMsgs(); }
+  }
 }
 
 function addMsg(chId, m, live){
