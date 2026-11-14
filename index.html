@@ -664,6 +664,7 @@ function logout(){
   closeDrawer();
   clients.forEach(c => { try { c.end(true); } catch(e){} });
   clients = [];
+  stopPolling();
   localStorage.removeItem('nx_me');
   me = null; cur = null; channels = []; store = {}; seen = {};
   $('appScreen').style.display = 'none';
