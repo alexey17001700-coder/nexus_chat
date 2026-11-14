@@ -1144,14 +1144,8 @@ async function pushMsg(obj){
     const sentHttp = await ntfyPub(nMsg(ch), payload);
     log('→ отправка в "' + ch + '": MQTT ' + sent + '/' + clients.length + ', HTTP ' + (sentHttp ? 'ок' : 'нет'));
     if (!sent && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
-    /* история для новых участников: тяжёлые вложения не кладём, иначе брокер рвёт соединение */
-    const hist = (store[ch] || []).slice(-40).map(x => {
-      if (x.data && x.data.length > 50000) return Object.assign({}, x, { data: '', trimmed: 1 });
-      return x;
-    });
-    const envHist = await Promise.all(hist.map(x => packMsg(ch, x)));
-    pub(tHist(ch), JSON.stringify(envHist), { retain: true });
-  } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); }
+    await sendHistory(ch);
+  } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); log('! ошибка отправки: ' + e); }
   return m;
 }
 
