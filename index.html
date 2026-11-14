@@ -1149,6 +1149,8 @@ function wsConnect(room){
     try { s.send(JSON.stringify({ t: 'join', room, id: me.id, nick: me.nick })); } catch(e){}
     /* сразу спрашиваем «кто в сети» — иначе список участников не подтянется */
     try { s.send(JSON.stringify({ t: 'who', room })); } catch(e){}
+    /* и сообщаем серверу свою push-подписку — чтобы уведомления шли и по этому каналу */
+    sendSubTo(room);
     const q = wsOutbox[room];
     if (q && q.length){ wsOutbox[room] = []; q.forEach(o => { try { s.send(JSON.stringify(o)); } catch(e){} }); }
   };
