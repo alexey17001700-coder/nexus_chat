@@ -1966,10 +1966,40 @@ async function pushOff(){
   pushBtnUI();
   toast('Уведомления выключены 🔕');
 }
-/* тап по уведомлению в трее — открываем нужный канал */
+/* сообщения от service worker — три вида:
+   push               — пришло уведомление, а окно открыто (не дублируем тревогу в трее)
+   push-resubscribe   — браузер перевыпустил подписку, надо сообщить серверу новую
+   open-room          — тап по уведомлению, открываем нужный канал */
 if ('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('message', e => {
     const d = e.data || {};
+
+    /* окно открыто и видно — показываем баннер вместо системного уведомления */
+    if (d.type === 'push'){
+      showBanner(d.title || '💬 Новое сообщение', '', d.body || '', d.room || null);
+      return;
+    }
+
+    /* подписка перевыпущена браузером (истёк срок ключей FCM) — без этого
+       уведомления молча перестают приходить через 1-2 месяца */
+    if (d.type === 'push-resubscribe' && d.sub){
+      try {
+        Object.keys(wsSocks).forEach(r => {
+          const s = wsSocks[r];
+          if (s && s.readyState === 1){
+            try { s.send(JSON.stringify({ t: 'sub', room: r, nick: me ? me.nick : '', d: d.sub })); } catch(err){}
+          }
+        });
+        fetch(vivoHttp() + '/subscribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sub: d.sub, rooms: channels.map(c => c.id), nick: me ? me.nick : '' })
+        }).catch(() => {});
+        log('push: подписка перевыпущена браузером — отправлена на сервер');
+      } catch(err){}
+      return;
+    }
+
+    /* тап по уведомлению в трее — открываем нужный канал */
     if (d.type === 'open-room' && d.room && channels.find(c => c.id === d.room)) joinChannel(d.room);
   });
 }
