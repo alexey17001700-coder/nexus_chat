@@ -788,53 +788,6 @@ function enterApp(){
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
 
-/* ================= СВОЙ WEBSOCKET НА VIVO ================= */
-let vivo = null, vivoReady = false, vivoRetry = null, vivoPing = null;
-
-function connectVivo(){
-  if (vivo && (vivo.readyState === 0 || vivo.readyState === 1)) return;
-  try { vivo = new WebSocket(VIVO_WS); } catch(e){ vivo = null; scheduleVivo(); return; }
-  vivo.onopen = () => {
-    vivoReady = true;
-    log('Vivo WS подключён');
-    vivoSubAll();
-    flushOutbox();
-    updateNet();
-    clearInterval(vivoPing);
-    vivoPing = setInterval(() => { try { if (vivoReady) vivo.send(JSON.stringify({ type:'ping' })); } catch(e){} }, 25000);
-  };
-  vivo.onmessage = (ev) => {
-    let d; try { d = JSON.parse(ev.data); } catch(e){ return; }
-    if (!d) return;
-    if (d.type === 'pong') return;
-    if (d.type === 'msg'){ onMQTT(d.topic, d.payload); return; }
-    if (d.type === 'batch'){ (d.items || []).forEach(p => onMQTT(d.topic, p)); return; }
-  };
-  vivo.onclose = () => { vivoReady = false; updateNet(); scheduleVivo(); };
-  vivo.onerror = () => { vivoReady = false; updateNet(); };
-}
-function scheduleVivo(){
-  clearTimeout(vivoRetry);
-  vivoRetry = setTimeout(connectVivo, 4000);
-}
-function vivoSubAll(){
-  if (!vivoReady || !vivo) return;
-  const ids = channels.map(c => c.id);
-  if (cur && ids.indexOf(cur) < 0) ids.push(cur);
-  const topics = [T_DIR];
-  ids.forEach(id => { topics.push(tHist(id)); topics.push(tMsg(id)); topics.push(tType(id)); topics.push(tSync(id)); });
-  topics.forEach(t => { try { vivo.send(JSON.stringify({ type:'sub', topic: t })); } catch(e){} });
-}
-function vivoPub(topic, payload){
-  if (!vivoReady || !vivo) return false;
-  try { vivo.send(JSON.stringify({ type:'pub', topic, payload })); return true; } catch(e){ return false; }
-}
-function closeVivo(){
-  clearTimeout(vivoRetry); clearInterval(vivoPing);
-  vivoReady = false;
-  if (vivo){ try { vivo.close(); } catch(e){} vivo = null; }
-}
-
 /* ================= MQTT (мульти-брокер: связь идёт через ВСЕ узлы сразу) ================= */
 function setNet(on, txt){
   $('netDot').classList.toggle('on', on);
