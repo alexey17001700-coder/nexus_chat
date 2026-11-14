@@ -890,7 +890,9 @@ async function pollTick(){
   pollBusy = true;
   const since = pollSince;
   const topics = [nDir()];
-  if (cur){ topics.push(nMsg(cur)); topics.push(nTyp(cur)); }
+  const ids = channels.map(c => c.id).slice(0, 4);
+  if (cur && ids.indexOf(cur) < 0) ids.unshift(cur);
+  ids.forEach(id => { topics.push(nMsg(id)); topics.push(nTyp(id)); });
   const res = await ntfyPoll(topics, since);
   if (res.ok){
     for (const it of res.items){
@@ -899,20 +901,26 @@ async function pollTick(){
       await onNtfy(t, it.message);
     }
     pollSince = Math.floor(Date.now() / 1000) - 2;
+  } else {
+    log('HTTP-опрос не удался (ntfy недоступен)');
   }
   pollBusy = false;
   updateNet();
 }
-/* кнопка 🔄 — принудительная синхронизация + показ состояния связи */
+/* кнопка 🔄 — принудительная синхронизация + панель диагностики */
 function forceSync(){
   const live = clients.filter(c => c.connected).length;
   toast('Связь: MQTT ' + live + '/' + BROKERS.length + ' · HTTP ' + (ntfyAlive ? '✓' : '—'));
+  log('— ручная синхронизация —');
+  log('MQTT: ' + live + '/' + BROKERS.length + ' · HTTP: ' + (ntfyAlive ? 'ок' : 'нет'));
   pollSince = Math.floor(Date.now() / 1000) - 60;
   pollBusy = false;
   clients.forEach(c => { try { if (!c.connected) c.reconnect(); } catch(e){} });
+  subscribeAll();
   if (cur) ntfyHistory(cur);
   ntfyDirPull();
   pollTick();
+  openDiag();
 }
 async function onNtfy(topic, body){
   let d; try { d = JSON.parse(body); } catch(e){ return; }
