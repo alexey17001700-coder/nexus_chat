@@ -807,13 +807,18 @@ function closeViewer(){ $('viewer').classList.remove('on'); $('viewerImg').src='
 function autoGrow(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
 function onKey(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendText(); } }
 
-function pushMsg(obj){
+async function pushMsg(obj){
+  const ch = cur;
   const m = Object.assign({ id: uid(), id_user: me.id, nick: me.nick, color: me.color, time: Date.now() }, obj);
-  addMsg(cur, m, true);
+  addMsg(ch, m, true);
   if (client && client.connected){
-    client.publish(tMsg(cur), JSON.stringify(m));
-    const hist = (store[cur] || []).slice(-60);
-    client.publish(tHist(cur), JSON.stringify(hist), { retain: true });
+    try {
+      const env = await packMsg(ch, m);
+      client.publish(tMsg(ch), JSON.stringify(env));
+      const hist = (store[ch] || []).slice(-60);
+      const envHist = await Promise.all(hist.map(x => packMsg(ch, x)));
+      client.publish(tHist(ch), JSON.stringify(envHist), { retain: true });
+    } catch(e){ toast('Ошибка шифрования — сообщение не отправлено'); }
   }
   return m;
 }
