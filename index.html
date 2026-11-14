@@ -886,18 +886,18 @@ async function onNtfy(topic, body){
   }
 }
 async function ntfyHistory(chId){
-  const arr = await ntfyPoll(nMsg(chId));
-  for (const body of arr){
+  const res = await ntfyPoll([nMsg(chId)], '12h');
+  for (const it of res.items){
     try {
-      const m = await unpackMsg(chId, JSON.parse(body));
+      const m = await unpackMsg(chId, JSON.parse(it.message));
       if (m) addMsg(chId, m, false);
     } catch(e){}
   }
   if (chId === cur) renderMsgs();
 }
 async function ntfyDirPull(){
-  const arr = await ntfyPoll(nDir());
-  arr.forEach(body => { try { mergeDir(JSON.parse(body)); } catch(e){} });
+  const res = await ntfyPoll([nDir()], '12h');
+  res.items.forEach(it => { try { mergeDir(JSON.parse(it.message)); } catch(e){} });
 }
 function mergeDir(d){
   if (!Array.isArray(d) || !d.length) return;
