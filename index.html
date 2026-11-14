@@ -511,6 +511,22 @@ body::before{
   </div>
 </div>
 
+<!-- delete channel modal -->
+<div class="modal" id="delModal" onclick="if(event.target===this)closeDelete()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h3>Удалить канал?</h3>
+      <button class="sheet-close" onclick="closeDelete()">✕</button>
+    </div>
+    <div class="sub">Канал <b id="delName" style="color:var(--gold1)"></b> исчезнет из списка у всех участников. Сообщения в нём больше не будут видны.</div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn-main" style="background:var(--panel);color:var(--text);border:1px solid var(--stroke)" onclick="closeDelete()">Отмена</button>
+      <button class="btn-main" style="background:linear-gradient(135deg,#ff8a8a,#e03131);color:#fff" onclick="confirmDelete()">Удалить 🗑</button>
+    </div>
+  </div>
+</div>
+
 <!-- online modal -->
 <div class="modal" id="onlineModal" onclick="if(event.target===this)closeOnline()">
   <div class="sheet">
