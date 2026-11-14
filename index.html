@@ -1742,7 +1742,16 @@ async function presencePing(){
 async function takePresence(chId, env){
   try {
     const p = await decryptObj(secretOf(chId), env);
-    if (p && p.nick){ markNick(chId, p.nick); if (chId === cur) renderOnline(); }
+    if (!p || !p.nick) return;
+    if (p.bye){
+      /* человек вышел — сразу убираем его из «в сети», не ждём таймаута */
+      if (seenNick[chId]) delete seenNick[chId][p.nick];
+      if (Array.isArray(online[chId])) online[chId] = online[chId].filter(u => u && u.nick !== p.nick);
+    } else {
+      markNick(chId, p.nick);
+      rememberMember(chId, p.nick);
+    }
+    if (chId === cur) renderOnline();
   } catch(e){ /* чужой ключ — молча игнорируем */ }
 }
 setInterval(() => { if (cur) presencePing(); }, 20000);
