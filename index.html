@@ -648,7 +648,7 @@ function connectMQTT(){
   client.on('message', onMQTT);
 }
 
-function onMQTT(topic, payload){
+async function onMQTT(topic, payload){
   let d; try { d = JSON.parse(payload.toString()); } catch(e){ return; }
 
   if (topic === T_DIR){
@@ -660,18 +660,23 @@ function onMQTT(topic, payload){
 
   if (topic.startsWith(BASE + 'hist_')){
     if (Array.isArray(d)){
-      d.forEach(m => addMsg(chId, m, false));
+      for (const env of d){
+        const m = await unpackMsg(chId, env);
+        if (m) addMsg(chId, m, false);
+      }
       if (chId === cur) renderMsgs();
     }
     return;
   }
   if (topic.startsWith(BASE + 'msg_')){
-    addMsg(chId, d, true);
+    const m = await unpackMsg(chId, d);
+    if (m) addMsg(chId, m, true);
     return;
   }
   if (topic.startsWith(BASE + 'typ_')){
-    if (d.id === me.id || chId !== cur) return;
-    showTyping(d.nick);
+    const t = await unpackMsg(chId, d);
+    if (!t || t.id === me.id || chId !== cur) return;
+    showTyping(t.nick);
   }
 }
 
