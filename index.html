@@ -847,6 +847,12 @@ function enterApp(){
   if (cur){ ntfyHistory(cur); askSync(cur); }
   pollSince = Math.floor(Date.now() / 1000) - 5;
   startPolling();
+  /* переход по ссылке из уведомления: сервер кладёт в пуш url "./?room=<id>".
+     Когда приложение было закрыто, postMessage из SW не доходит — читаем параметр сами. */
+  try {
+    const qr = new URLSearchParams(location.search).get('room');
+    if (qr && qr !== cur && channels.find(c => c.id === qr)) joinChannel(qr);
+  } catch(e){}
   log('старт: канал=' + cur + ', каналов=' + channels.length);
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
