@@ -675,7 +675,14 @@ async function onMQTT(topic, payload){
   let d; try { d = JSON.parse(payload.toString()); } catch(e){ return; }
 
   if (topic === T_DIR){
-    if (Array.isArray(d)){ channels = d; renderChannels(); }
+    if (Array.isArray(d) && d.length){
+      /* объединяем справочник: свои каналы не теряем, чужие добавляем вместе с ключом */
+      const map = new Map(channels.map(c => [c.id, c]));
+      d.forEach(c => { if (c && c.id) map.set(c.id, Object.assign({}, map.get(c.id) || {}, c)); });
+      channels = Array.from(map.values());
+      saveChannels();
+      renderChannels();
+    }
     return;
   }
   const chId = topic.replace(BASE, '').replace(/^(hist_|msg_|typ_)/, '');
