@@ -1547,6 +1547,31 @@ function insEmoji(e){
 }
 function closeEmoji(){ $('emojiModal').classList.remove('on'); }
 
+/* ================= КТО В СЕТИ ================= */
+function renderOnline(){
+  const list = (cur && online[cur]) ? online[cur] : [];
+  const chip = $('onlineChip');
+  if (chip) chip.textContent = '👥 ' + list.length;
+  const box = $('onlineList');
+  if (!box) return;
+  const c = channels.find(x => x.id === cur);
+  $('onlineSub').textContent = (c ? (c.ic + ' ' + c.name) : 'Канал') + ' · ' + list.length + ' в сети';
+  if (!list.length){
+    box.innerHTML = '<div style="color:var(--muted);font-size:13.5px;padding:10px 4px">Пока никого — ты первый 👋</div>';
+    return;
+  }
+  box.innerHTML = list.map(u => `
+    <div class="chan" style="cursor:default">
+      <div class="ci" style="background:${colorOf(u.nick||'?')};color:#0a0f1d;font-weight:800">${esc((u.nick||'?')[0].toUpperCase())}</div>
+      <div style="min-width:0;flex:1">
+        <div class="cn">${esc(u.nick || 'Гость')}${(me && u.id === me.id) ? ' <span style="color:var(--gold1);font-size:11px">· это ты</span>' : ''}</div>
+        <div class="cd" style="color:var(--ok)">● в сети</div>
+      </div>
+    </div>`).join('');
+}
+function openOnline(){ renderOnline(); $('onlineModal').classList.add('on'); }
+function closeOnline(){ $('onlineModal').classList.remove('on'); }
+
 /* ================= DRAWER ================= */
 function openDrawer(){ $('drawer').classList.add('on'); $('overlay').classList.add('on'); renderChannels(); }
 function closeDrawer(){ $('drawer').classList.remove('on'); $('overlay').classList.remove('on'); }
