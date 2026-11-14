@@ -145,7 +145,14 @@ body::before{
 .icon-btn:active{transform:scale(.92);background:var(--panel2)}
 .top-info{flex:1;min-width:0}
 .top-info .t1{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top-info .t2{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.top-info .t2{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap}
+.top-info .t2 #netTxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.online-btn{position:relative;font-size:17px}
+.online-btn .oc-n{
+  position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:10px;
+  background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#1a1405;
+  font-size:11px;font-weight:800;display:grid;place-items:center;border:1px solid rgba(0,0,0,.4);
+}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--danger);box-shadow:0 0 8px currentColor}
 .dot.on{background:var(--ok)}
 
