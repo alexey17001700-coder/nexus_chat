@@ -1063,6 +1063,8 @@ function forceSync(){
   pollSince = Math.floor(Date.now() / 1000) - 60;
   pollBusy = false;
   clients.forEach(c => { try { if (!c.connected) c.reconnect(); } catch(e){} });
+  Object.keys(wsSocks).forEach(k => { try { wsSocks[k].close(); } catch(e){} delete wsSocks[k]; });
+  wsSubAll();
   subscribeAll();
   if (cur) ntfyHistory(cur);
   ntfyDirPull();
