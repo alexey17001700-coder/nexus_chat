@@ -818,11 +818,24 @@ function ntfySub(topic){
     es.onerror = () => { /* EventSource переподключается сам */ };
   } catch(e){}
 }
-function ntfyPub(topic, payload){
+/* SSE сразу на все каналы — мгновенная доставка, даже если открыт другой канал */
+function ntfySubAll(){
+  ntfySub(nDir());
+  channels.forEach(c => { ntfySub(nMsg(c.id)); ntfySub(nTyp(c.id)); });
+  if (cur){ ntfySub(nMsg(cur)); ntfySub(nTyp(cur)); }
+}
+function ntfyPub(topic, payload, tries){
+  tries = tries || 0;
   try {
     return fetch(NTFY + topic, { method: 'POST', body: payload, headers: { 'Content-Type': 'text/plain' }, cache: 'no-store' })
-      .then(r => { if (r.ok){ ntfyAlive = true; lastHttpOk = Date.now(); updateNet(); return true; } return false; })
-      .catch(() => false);
+      .then(r => {
+        if (r.ok){ ntfyAlive = true; lastHttpOk = Date.now(); updateNet(); return true; }
+        if (tries < 2) return new Promise(res => setTimeout(res, 900)).then(() => ntfyPub(topic, payload, tries + 1));
+        return false;
+      })
+      .catch(() => tries < 2
+        ? new Promise(res => setTimeout(res, 900)).then(() => ntfyPub(topic, payload, tries + 1))
+        : false);
   } catch(e){ return Promise.resolve(false); }
 }
 /* один запрос сразу по нескольким темам — не упираемся в лимиты ntfy */
