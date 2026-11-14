@@ -947,7 +947,7 @@ async function ntfyPoll(topics, since){
 /* --- ОПРОС: страховка, которая доставляет сообщения всегда --- */
 let pollTimer = null, pollBusy = false;
 let pollSince = Math.floor(Date.now() / 1000) - 5;
-const POLL_MS = 3500;
+const POLL_MS = 4000;
 function startPolling(){
   if (pollTimer) return;
   pollTick();
