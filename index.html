@@ -1844,6 +1844,48 @@ function closeOnline(){ $('onlineModal').classList.remove('on'); }
 function openDrawer(){ $('drawer').classList.add('on'); $('overlay').classList.add('on'); renderChannels(); }
 function closeDrawer(){ $('drawer').classList.remove('on'); $('overlay').classList.remove('on'); }
 
+/* ================= СЕЙФ: РЕЖИМ БОССА =================
+   Незаметная кнопка 🔑 в шапке списка каналов (боковое меню ☰).
+   Пин-код в файле открытым текстом не лежит — только в XOR-виде (0x5A).
+   ВАЖНО: это НЕ защита. Код клиентский, лежит в открытом репозитории,
+   и любой, кто откроет исходник, может войти в режим напрямую.
+   Режим Босса = только флаг в localStorage, он ничего не шифрует. */
+const BOSS_KEY = [98,110,111,104];   // пин в XOR-виде (ключ 0x5A)
+const BOSS_FLAG = 'shtab_boss';
+function bossPinOk(v){
+  const want = BOSS_KEY.map(c => String.fromCharCode(c ^ 0x5A)).join('');
+  return String(v == null ? '' : v).trim() === want;
+}
+function bossOn(){ try { return localStorage.getItem(BOSS_FLAG) === 'true'; } catch(e){ return false; } }
+function bossUI(){
+  const b = $('bossKey');
+  if (!b) return;
+  if (bossOn()){ b.textContent = '🟢'; b.classList.add('on'); b.title = 'Режим Босса активен'; }
+  else { b.textContent = '🔑'; b.classList.remove('on'); b.title = 'Сейф'; }
+}
+function bossTap(){
+  if (bossOn()){
+    if (confirm('Выйти из режима Босса?')){
+      try { localStorage.removeItem(BOSS_FLAG); } catch(e){}
+      bossUI();
+      toast('Режим Босса выключен');
+    }
+    return;
+  }
+  const v = prompt('Введите пин-код Администратора:');
+  if (v === null) return;
+  if (bossPinOk(v)){
+    try { localStorage.setItem(BOSS_FLAG, 'true'); } catch(e){}
+    bossUI();
+    alert('Режим Босса активирован!');
+    toast('Режим Босса активирован 🟢');
+  } else {
+    alert('Неверный код');
+  }
+}
+/* при загрузке сразу показываем актуальное состояние (зелёная иконка, если режим уже включён) */
+bossUI();
+
 /* ================= TOUR ================= */
 const TOUR = [
   { ic:'💬', t:'Добро пожаловать в Nexus Chat', d:'Премиум-мессенджер с каналами, фото, файлами и голосовыми. Всё бесплатно и без регистрации по почте.' },
