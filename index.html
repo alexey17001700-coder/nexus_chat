@@ -253,6 +253,12 @@ body::before{
   background:rgba(0,0,0,.35);border:1px solid var(--stroke);flex-shrink:0}
 .chan .cn{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chan .cd{font-size:11px;color:var(--muted)}
+.chan-del{
+  flex-shrink:0;width:32px;height:32px;border-radius:10px;border:1px solid var(--stroke);
+  background:rgba(0,0,0,.25);color:var(--muted);font-size:14px;cursor:pointer;
+  display:grid;place-items:center;transition:.2s;
+}
+.chan-del:active{transform:scale(.9);background:rgba(255,107,107,.18);color:var(--danger);border-color:rgba(255,107,107,.4)}
 .dr-foot{padding:12px 14px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--stroke);display:flex;gap:9px}
 .dr-foot button{
   flex:1;padding:12px;border-radius:13px;border:1px solid var(--stroke);background:var(--panel);
