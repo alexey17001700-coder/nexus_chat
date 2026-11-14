@@ -1672,28 +1672,61 @@ function closeEmoji(){ $('emojiModal').classList.remove('on'); }
       НЕ пишет его в историю, а все в канале видят, что человек онлайн
    3) живые следы от обычных сообщений и статуса «печатает…» */
 const seenNick = {};   // chId -> { nick: время последнего сигнала }
-const NICK_TTL = 45000;
+const NICK_TTL = 18000;   // 18 сек — быстро замечаем, что человек вышел
 
+/* --- УЧАСТНИКИ КАНАЛА (кто вообще есть в канале) ---
+   Раньше список показывал только «кто в сети», и вышедший человек висел
+   в нём ещё 45 секунд. Теперь ведём ДВА списка:
+   🟢 в сети прямо сейчас  ·  👤 все участники канала (офлайн — серым, с временем) */
+function loadMembers(){
+  try { members = JSON.parse(localStorage.getItem(MEMB_KEY) || '{}'); } catch(e){ members = {}; }
+}
+function saveMembers(){ try { localStorage.setItem(MEMB_KEY, JSON.stringify(members)); } catch(e){} }
+function rememberMember(chId, nick){
+  if (!chId || !nick || chId === '__dir__' || !me || nick === me.nick) return;
+  if (!members[chId]) members[chId] = {};
+  const old = members[chId][nick];
+  members[chId][nick] = { nick, last: Date.now(), color: (old && old.color) || colorOf(nick) };
+  saveMembers();
+}
 function markNick(chId, nick){
   if (!chId || !nick || !me || nick === me.nick) return;
   if (!seenNick[chId]) seenNick[chId] = {};
   seenNick[chId][nick] = Date.now();
+  rememberMember(chId, nick);
+}
+function ago(t){
+  if (!t) return 'был(а) давно';
+  const s = Math.floor((Date.now() - t) / 1000);
+  if (s < 60) return 'был(а) только что';
+  if (s < 3600) return 'был(а) ' + Math.floor(s/60) + ' мин назад';
+  if (s < 86400) return 'был(а) ' + Math.floor(s/3600) + ' ч назад';
+  return 'был(а) ' + Math.floor(s/86400) + ' дн назад';
 }
 function onlineList(){
   if (!cur) return [];
-  const out = [], have = new Set();
-  const add = (nick, id) => {
-    const n = nick || 'Гость';
-    if (have.has(n)) return;
-    have.add(n); out.push({ nick: n, id: id || '' });
-  };
-  (online[cur] || []).forEach(u => add(u.nick, u.id));
+  const set = new Set(), ids = {};
+  (online[cur] || []).forEach(u => { if (u && u.nick){ set.add(u.nick); ids[u.nick] = u.id || ''; } });
   const seen = seenNick[cur] || {};
   const now = Date.now();
-  Object.keys(seen).forEach(n => { if (now - seen[n] > NICK_TTL) delete seen[n]; else add(n, ''); });
-  if (me) add(me.nick, me.id);
-  return out;
+  Object.keys(seen).forEach(n => { if (now - seen[n] > NICK_TTL) delete seen[n]; else set.add(n); });
+  if (me){ set.add(me.nick); ids[me.nick] = me.id; }
+  return Array.from(set).map(n => ({ nick: n, id: ids[n] || '' }));
 }
+function memberRow(nick, id, isOn, last){
+  const you = (me && id === me.id) ? ' <span style="color:var(--gold1);font-size:11px">· это ты</span>' : '';
+  const sub = isOn
+    ? '<span style="color:var(--ok)">● в сети</span>'
+    : '<span style="color:var(--muted)">○ ' + ago(last) + '</span>';
+  return `<div class="chan" style="cursor:default;${isOn ? '' : 'opacity:.6'}">
+      <div class="ci" style="background:${colorOf(nick||'?')};color:#0a0f1d;font-weight:800">${esc((nick||'?')[0].toUpperCase())}</div>
+      <div style="min-width:0;flex:1">
+        <div class="cn">${esc(nick || 'Гость')}${you}</div>
+        <div class="cd">${sub}</div>
+      </div>
+    </div>`;
+}
+const whoSec = t => `<div style="font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:800;padding:8px 4px 4px">${t}</div>`;
 /* presence-пульс: короткий зашифрованный пакет «я тут».
    Конверт помечаем kind:"typing" — сервер такие пакеты в историю не пишет. */
 async function presencePing(){
