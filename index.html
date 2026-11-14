@@ -1875,6 +1875,17 @@ let pushSub = null;
 function pushSupported(){
   return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
 }
+/* разбор окружения: почему браузер может НЕ дать разрешение на уведомления.
+   На iPhone уведомления работают ТОЛЬКО у приложения, добавленного на «Экран Домой».
+   Во встроенном браузере (Telegram, VK, Instagram) разрешение не выдаётся никогда. */
+function pushEnv(){
+  const ua = navigator.userAgent || '';
+  const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const webview = /(FBAN|FBAV|Instagram|VKClient|Telegram|OKApp|WebView|; wv\))/i.test(ua);
+  const perm = ('Notification' in window) ? Notification.permission : 'нет API';
+  return { ios, standalone, webview, perm };
+}
 /* VAPID-ключ приходит в base64url — PushManager ждёт Uint8Array */
 function urlB64ToU8(base64){
   const pad = '='.repeat((4 - (base64.length % 4)) % 4);
