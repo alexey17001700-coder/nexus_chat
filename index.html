@@ -1218,8 +1218,11 @@ async function wsOnMessage(room, raw){
     if (r === cur) renderMsgs();
     return;
   }
-  /* служебные пакеты сервера */
-  if (d.t === 'hello' || d.t === 'pong') return;
+  /* служебные пакеты сервера.
+     В hello сервер отдаёт ПУБЛИЧНЫЙ VAPID-ключ — из него строится push-подписка.
+     Приватный ключ никогда не покидает сервер. */
+  if (d.t === 'hello'){ if (d.vapid) onVapid(d.vapid); return; }
+  if (d.t === 'pong') return;
   /* «кто в сети»: сервер присылает список участников комнаты.
      Раньше пакет игнорировался — поэтому в шапке не было видно, кто онлайн. */
   if (d.t === 'presence' || d.t === 'welcome'){
