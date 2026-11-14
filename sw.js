@@ -101,7 +101,8 @@ self.addEventListener('pushsubscriptionchange', e => {
       if (cls.length) {
         for (const c of cls) c.postMessage({ type: 'push-resubscribe', sub: sub.toJSON() });
       } else {
-        await fetch('/subscribe', {
+        /* окно закрыто — стучимся на сервер напрямую (абсолютный адрес Vivo) */
+        await fetch('https://shtab-boss.duckdns.org:8443/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ subscription: sub.toJSON() })
