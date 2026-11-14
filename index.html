@@ -869,10 +869,10 @@ async function sendTyping(){
   const now = Date.now();
   if (now - typingSentAt < 1800) return;
   typingSentAt = now;
-  if (!client || !client.connected || !cur) return;
+  if (!cur) return;
   try {
     const env = E2E ? Object.assign({ e: 1 }, await encryptObj(secretOf(cur), { id: me.id, nick: me.nick })) : { id: me.id, nick: me.nick };
-    client.publish(tType(cur), JSON.stringify(env));
+    pub(tType(cur), JSON.stringify(env));
   } catch(e){}
 }
 function showTyping(nick){
