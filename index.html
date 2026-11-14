@@ -1763,19 +1763,23 @@ function renderOnline(){
   const box = $('onlineList');
   if (!box) return;
   const c = channels.find(x => x.id === cur);
-  $('onlineSub').textContent = (c ? (c.ic + ' ' + c.name) : 'Канал') + ' · ' + list.length + ' в сети';
-  if (!list.length){
-    box.innerHTML = '<div style="color:var(--muted);font-size:13.5px;padding:10px 4px">Пока никого — ты первый 👋</div>';
-    return;
+  const onSet = new Set(list.map(u => u.nick));
+  const mem = members[cur] || {};
+  const off = Object.keys(mem)
+    .filter(n => !onSet.has(n))
+    .sort((a, b) => ((mem[b] && mem[b].last) || 0) - ((mem[a] && mem[a].last) || 0));
+  $('onlineSub').textContent = (c ? (c.ic + ' ' + c.name) : 'Канал') + ' · ' + list.length + ' в сети, ' + off.length + ' офлайн';
+
+  let html = whoSec('🟢 В сети · ' + list.length);
+  html += list.length
+    ? list.map(u => memberRow(u.nick, u.id, true, 0)).join('')
+    : '<div style="color:var(--muted);font-size:13.5px;padding:4px 4px 8px">Пока никого — ты первый 👋</div>';
+
+  if (off.length){
+    html += whoSec('👤 Участники канала · ' + off.length);
+    html += off.map(n => memberRow(n, '', false, (mem[n] || {}).last)).join('');
   }
-  box.innerHTML = list.map(u => `
-    <div class="chan" style="cursor:default">
-      <div class="ci" style="background:${colorOf(u.nick||'?')};color:#0a0f1d;font-weight:800">${esc((u.nick||'?')[0].toUpperCase())}</div>
-      <div style="min-width:0;flex:1">
-        <div class="cn">${esc(u.nick || 'Гость')}${(me && u.id === me.id) ? ' <span style="color:var(--gold1);font-size:11px">· это ты</span>' : ''}</div>
-        <div class="cd" style="color:var(--ok)">● в сети</div>
-      </div>
-    </div>`).join('');
+  box.innerHTML = html;
 }
 function openOnline(){
   const s = wsSocks[cur];
