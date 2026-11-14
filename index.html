@@ -408,7 +408,7 @@ body::before{
       <button class="cbtn" onclick="openEmoji()">😊</button>
       <button class="cbtn" onclick="pickFile('image/*')">🖼️</button>
       <button class="cbtn" onclick="pickFile('*/*')">📎</button>
-      <textarea id="inMsg" rows="1" placeholder="Сообщение…" oninput="autoGrow(this)" onkeydown="onKey(event)"></textarea>
+      <textarea id="inMsg" rows="1" placeholder="Сообщение…" oninput="autoGrow(this);sendTyping()" onkeydown="onKey(event)"></textarea>
       <button class="cbtn" id="micBtn" onclick="toggleRec()">🎤</button>
       <button class="cbtn send" onclick="sendText()">➤</button>
     </div>
