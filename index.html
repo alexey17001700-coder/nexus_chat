@@ -771,6 +771,84 @@ function subscribeChannel(id){
   });
 }
 
+/* ================= РЕЗЕРВНЫЙ КАНАЛ (ntfy.sh, обычный HTTPS) ================= */
+function ntfySub(topic){
+  if (ntfySubs[topic]) return;
+  try {
+    const es = new EventSource(NTFY + topic + '/sse');
+    ntfySubs[topic] = es;
+    es.onopen = () => { ntfyAlive = true; updateNet(); };
+    es.onmessage = e => {
+      ntfyAlive = true;
+      try {
+        const j = JSON.parse(e.data);
+        if (j.event === 'message' && j.message) onNtfy(topic, j.message);
+      } catch(err){}
+    };
+    es.onerror = () => { /* EventSource переподключается сам */ };
+  } catch(e){}
+}
+function ntfyPub(topic, payload){
+  try {
+    return fetch(NTFY + topic, { method: 'POST', body: payload, headers: { 'Content-Type': 'text/plain' } })
+      .then(r => { if (r.ok){ ntfyAlive = true; updateNet(); return true; } return false; })
+      .catch(() => false);
+  } catch(e){ return Promise.resolve(false); }
+}
+async function ntfyPoll(topic, since){
+  try {
+    const r = await fetch(NTFY + topic + '/json?poll=1&since=' + (since || '12h'));
+    if (!r.ok) return [];
+    ntfyAlive = true;
+    const txt = await r.text();
+    const out = [];
+    txt.split('\n').forEach(line => {
+      line = line.trim(); if (!line) return;
+      try { const j = JSON.parse(line); if (j.event === 'message' && j.message) out.push(j.message); } catch(e){}
+    });
+    return out;
+  } catch(e){ return []; }
+}
+async function onNtfy(topic, body){
+  let d; try { d = JSON.parse(body); } catch(e){ return; }
+  if (topic === nDir()){ mergeDir(d); return; }
+  const chId = topic.slice(NP.length).replace(/^(msg_|typ_)/, '');
+  if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
+  if (topic.startsWith(NP + 'msg_')){
+    const m = await unpackMsg(chId, d);
+    if (m) addMsg(chId, m, true);
+    return;
+  }
+  if (topic.startsWith(NP + 'typ_')){
+    const t = await unpackMsg(chId, d);
+    if (!t || t.id === me.id || chId !== cur) return;
+    showTyping(t.nick);
+  }
+}
+async function ntfyHistory(chId){
+  const arr = await ntfyPoll(nMsg(chId));
+  for (const body of arr){
+    try {
+      const m = await unpackMsg(chId, JSON.parse(body));
+      if (m) addMsg(chId, m, false);
+    } catch(e){}
+  }
+  if (chId === cur) renderMsgs();
+}
+async function ntfyDirPull(){
+  const arr = await ntfyPoll(nDir());
+  arr.forEach(body => { try { mergeDir(JSON.parse(body)); } catch(e){} });
+}
+function mergeDir(d){
+  if (!Array.isArray(d) || !d.length) return;
+  /* объединяем справочник: свои каналы не теряем, чужие добавляем вместе с ключом */
+  const map = new Map(channels.map(c => [c.id, c]));
+  d.forEach(c => { if (c && c.id) map.set(c.id, Object.assign({}, map.get(c.id) || {}, c)); });
+  channels = Array.from(map.values());
+  saveChannels();
+  renderChannels();
+}
+
 function addMsg(chId, m, live){
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
   if (seen[chId].has(m.id)) return;
