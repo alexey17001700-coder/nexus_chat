@@ -1530,6 +1530,8 @@ async function sendTyping(){
   } catch(e){}
 }
 function showTyping(nick){
+  markNick(cur, nick);
+  renderOnline();
   $('typing').textContent = nick + ' печатает…';
   clearTimeout(typingTimers[nick]);
   typingTimers[nick] = setTimeout(()=>{ $('typing').textContent = ''; }, 2200);
