@@ -1409,7 +1409,8 @@ function confirmDelete(){
   saveDeleted();
   channels = channels.filter(c => c.id !== id);
   saveChannels();
-  delete store[id]; delete seen[id]; delete unread[id]; delete online[id];
+  delete store[id]; delete seen[id]; delete unread[id]; delete online[id]; delete members[id];
+  saveMembers();
   try { localStorage.removeItem('nx_msgs_' + id); } catch(e){}
   try { if (wsSocks[id]){ wsSocks[id].close(); delete wsSocks[id]; } } catch(e){}
   /* сообщаем всем участникам: канал удалён (tombstone в справочнике) */
