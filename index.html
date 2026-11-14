@@ -1118,28 +1118,39 @@ async function wsOnMessage(room, raw){
   let d; try { d = JSON.parse(raw); } catch(e){ return; }
   lastWsOk = Date.now();
   updateNet();
-  if (d && d.t === 'hist'){
+  if (!d || !d.t) return;
+
+  /* сервер отдаёт историю комнаты сразу после join */
+  if (d.t === 'history'){
+    const r = d.room || room;
     for (const it of (d.items || [])){
       let x; try { x = JSON.parse(it); } catch(e){ continue; }
-      await wsDispatch(room, x);
+      await wsDispatch(r, x);
     }
-    if (room === cur) renderMsgs();
+    if (r === cur) renderMsgs();
     return;
   }
-  await wsDispatch(room, d);
+  /* служебные пакеты сервера */
+  if (d.t === 'hello' || d.t === 'welcome' || d.t === 'presence' || d.t === 'pong') return;
+  if (d.t === 'ping'){ wsPub(room, { t: 'pong' }); return; }
+  if (d.t === 'error'){ log('WS ошибка: ' + d.error); return; }
+
+  await wsDispatch(d.room || room, d);
 }
 async function wsDispatch(room, d){
   if (!d || !d.t) return;
-  if (d.t === 'dir'){ mergeDir(d.items); return; }
+  /* справочник каналов: {t:"dir", room:"__dir__", d:[...]} */
+  if (d.t === 'dir'){ mergeDir(d.d); return; }
+  /* сообщение: {t:"msg", room, d:<envelope>} */
   if (d.t === 'msg'){
-    const m = await unpackMsg(room, d.m);
+    const m = await unpackMsg(room, d.d);
     if (m) addMsg(room, m, true);
     return;
   }
-  if (d.t === 'typ'){
-    const t = await unpackMsg(room, d.m);
-    if (!t || t.id === me.id || room !== cur) return;
-    showTyping(t.nick);
+  /* печатает: {t:"typing", room, nick} */
+  if (d.t === 'typing'){
+    if (!d.nick || d.nick === me.nick || room !== cur) return;
+    showTyping(d.nick);
     return;
   }
 }
