@@ -784,18 +784,20 @@ function subscribeChannel(id){
   });
 }
 
-/* ================= РЕЗЕРВНЫЙ КАНАЛ (ntfy.sh, обычный HTTPS) ================= */
+/* ================= РЕЗЕРВНЫЙ КАНАЛ (ntfy.sh, обычный HTTPS) =================
+   Работает даже там, где WebSocket/MQTT заблокирован мобильным оператором.
+   Два механизма сразу: SSE (мгновенно) + опрос (гарантированно доходит). */
 function ntfySub(topic){
   if (ntfySubs[topic]) return;
   try {
     const es = new EventSource(NTFY + topic + '/sse');
     ntfySubs[topic] = es;
-    es.onopen = () => { ntfyAlive = true; updateNet(); };
+    es.onopen = () => { ntfyAlive = true; lastHttpOk = Date.now(); updateNet(); };
     es.onmessage = e => {
-      ntfyAlive = true;
+      ntfyAlive = true; lastHttpOk = Date.now();
       try {
         const j = JSON.parse(e.data);
-        if (j.event === 'message' && j.message) onNtfy(topic, j.message);
+        if (j.event === 'message' && j.message) onNtfy(j.topic || topic, j.message);
       } catch(err){}
     };
     es.onerror = () => { /* EventSource переподключается сам */ };
@@ -803,24 +805,69 @@ function ntfySub(topic){
 }
 function ntfyPub(topic, payload){
   try {
-    return fetch(NTFY + topic, { method: 'POST', body: payload, headers: { 'Content-Type': 'text/plain' } })
-      .then(r => { if (r.ok){ ntfyAlive = true; updateNet(); return true; } return false; })
+    return fetch(NTFY + topic, { method: 'POST', body: payload, headers: { 'Content-Type': 'text/plain' }, cache: 'no-store' })
+      .then(r => { if (r.ok){ ntfyAlive = true; lastHttpOk = Date.now(); updateNet(); return true; } return false; })
       .catch(() => false);
   } catch(e){ return Promise.resolve(false); }
 }
-async function ntfyPoll(topic, since){
+/* один запрос сразу по нескольким темам — не упираемся в лимиты ntfy */
+async function ntfyPoll(topics, since){
   try {
-    const r = await fetch(NTFY + topic + '/json?poll=1&since=' + (since || '12h'));
-    if (!r.ok) return [];
-    ntfyAlive = true;
+    const url = NTFY + topics.join(',') + '/json?poll=1&since=' + (since || '12h');
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return { ok: false, items: [] };
+    ntfyAlive = true; lastHttpOk = Date.now();
     const txt = await r.text();
-    const out = [];
+    const items = [];
     txt.split('\n').forEach(line => {
       line = line.trim(); if (!line) return;
-      try { const j = JSON.parse(line); if (j.event === 'message' && j.message) out.push(j.message); } catch(e){}
+      try {
+        const j = JSON.parse(line);
+        if (j.event === 'message' && j.message) items.push({ topic: j.topic || '', message: j.message });
+      } catch(e){}
     });
-    return out;
-  } catch(e){ return []; }
+    return { ok: true, items };
+  } catch(e){ return { ok: false, items: [] }; }
+}
+
+/* --- ОПРОС: страховка, которая доставляет сообщения всегда --- */
+let pollTimer = null, pollBusy = false;
+let pollSince = Math.floor(Date.now() / 1000) - 5;
+const POLL_MS = 3500;
+function startPolling(){
+  if (pollTimer) return;
+  pollTick();
+  pollTimer = setInterval(pollTick, POLL_MS);
+}
+function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+async function pollTick(){
+  if (pollBusy || !me) return;
+  pollBusy = true;
+  const since = pollSince;
+  const topics = [nDir()];
+  if (cur){ topics.push(nMsg(cur)); topics.push(nTyp(cur)); }
+  const res = await ntfyPoll(topics, since);
+  if (res.ok){
+    for (const it of res.items){
+      let t = it.topic;
+      if (!t) t = (it.message.trim().charAt(0) === '[') ? nDir() : nMsg(cur);
+      await onNtfy(t, it.message);
+    }
+    pollSince = Math.floor(Date.now() / 1000) - 2;
+  }
+  pollBusy = false;
+  updateNet();
+}
+/* кнопка 🔄 — принудительная синхронизация + показ состояния связи */
+function forceSync(){
+  const live = clients.filter(c => c.connected).length;
+  toast('Связь: MQTT ' + live + '/' + BROKERS.length + ' · HTTP ' + (ntfyAlive ? '✓' : '—'));
+  pollSince = Math.floor(Date.now() / 1000) - 60;
+  pollBusy = false;
+  clients.forEach(c => { try { if (!c.connected) c.reconnect(); } catch(e){} });
+  if (cur) ntfyHistory(cur);
+  ntfyDirPull();
+  pollTick();
 }
 async function onNtfy(topic, body){
   let d; try { d = JSON.parse(body); } catch(e){ return; }
