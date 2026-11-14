@@ -689,13 +689,16 @@ function setNet(on, txt){
 function updateNet(){
   const live = clients.filter(c => c.connected).length;
   if (live > 0){ setNet(true, 'в сети · ' + live + '/' + BROKERS.length); return; }
+  if (ntfyAlive){ setNet(true, 'в сети · HTTP'); return; }
   setNet(false, (Date.now() - netStarted > 12000) ? 'нет связи — проверь интернет' : 'подключение…');
 }
-function connectMQTT(){
+async function connectMQTT(){
   clients.forEach(c => { try { c.end(true); } catch(e){} });
   clients = [];
   netStarted = Date.now();
-  if (typeof mqtt === 'undefined'){ setNet(false, 'нет библиотеки связи'); return; }
+  let ok = false;
+  try { ok = await (window.__mqttReady || Promise.resolve(typeof mqtt !== 'undefined')); } catch(e){ ok = false; }
+  if (!ok || typeof mqtt === 'undefined'){ updateNet(); return; }
   BROKERS.forEach((url, i) => setTimeout(() => connectBroker(url), i * 250));
   setTimeout(updateNet, 2500);
   setTimeout(updateNet, 8000);
