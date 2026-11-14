@@ -478,6 +478,7 @@ let seen = {};       // channelId -> Set(ids)
 let typingTimers = {};
 let typingSentAt = 0;
 let rec = null, recChunks = [], recTimer = null, recSec = 0;
+let outbox = [];     // очередь сообщений, если связи не было
 
 /* ================= UTILS ================= */
 const $ = id => document.getElementById(id);
