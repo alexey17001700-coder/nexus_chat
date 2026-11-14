@@ -795,13 +795,9 @@ async function onMQTT(topic, payload){
   let d; try { d = JSON.parse(payload.toString()); } catch(e){ return; }
 
   if (topic === T_DIR){ mergeDir(d); return; }
-  const chId = topic.replace(BASE, '').replace(/^(hist_|msg_|typ_|sync_)/, '');
+  const chId = topic.replace(BASE, '').replace(/^(hist_|msg_|typ_)/, '');
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
 
-  if (topic.startsWith(BASE + 'sync_')){
-    if (d && d.from !== me.id) sendHistory(chId);
-    return;
-  }
   if (topic.startsWith(BASE + 'hist_')){
     if (Array.isArray(d)){
       for (const env of d){
@@ -951,8 +947,12 @@ function forceSync(){
 async function onNtfy(topic, body){
   let d; try { d = JSON.parse(body); } catch(e){ return; }
   if (topic === nDir()){ mergeDir(d); return; }
-  const chId = topic.slice(NP.length).replace(/^(msg_|typ_)/, '');
+  const chId = topic.slice(NP.length).replace(/^(msg_|typ_|sync_)/, '');
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
+  if (topic.startsWith(NP + 'sync_')){
+    if (d && d.from !== me.id) sendHistory(chId);
+    return;
+  }
   if (topic.startsWith(NP + 'msg_')){
     const m = await unpackMsg(chId, d);
     if (m) addMsg(chId, m, true);
