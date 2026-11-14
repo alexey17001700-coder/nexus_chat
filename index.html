@@ -953,7 +953,7 @@ function renderMsgs(){
 
 function renderMsg(m){
   if (m.type === 'sys') return `<div class="sysmsg">${esc(m.text)}</div>`;
-  const mine = m.id_user === me.id;
+  const mine = !!(me && m.id_user === me.id);
   const av = `<div class="av" style="background:${m.color || colorOf(m.nick||'?')}">${esc((m.nick||'?')[0].toUpperCase())}</div>`;
   let body = '';
   if (m.type === 'text'){
