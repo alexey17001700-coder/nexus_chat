@@ -1222,7 +1222,17 @@ async function wsOnMessage(room, raw){
      Раньше пакет игнорировался — поэтому в шапке не было видно, кто онлайн. */
   if (d.t === 'presence' || d.t === 'welcome'){
     const r = d.room || room;
-    if (r !== '__dir__' && Array.isArray(d.users)){ online[r] = d.users; renderOnline(); }
+    if (r !== '__dir__' && Array.isArray(d.users)){
+      online[r] = d.users;
+      /* сервер — источник правды по соединениям: кого нет в его списке, тот вышел.
+         Чистим локальные следы, иначе «вышедший» висел в сети ещё 45 секунд. */
+      const names = new Set(d.users.map(u => u && u.nick).filter(Boolean));
+      const seen = seenNick[r] || {};
+      const now = Date.now();
+      Object.keys(seen).forEach(n => { if (!names.has(n) && now - seen[n] > 8000) delete seen[n]; });
+      d.users.forEach(u => { if (u && u.nick) rememberMember(r, u.nick); });
+      renderOnline();
+    }
     return;
   }
   if (d.t === 'ping'){ wsPub(room, { t: 'pong' }); return; }
