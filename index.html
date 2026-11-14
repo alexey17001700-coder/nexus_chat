@@ -1006,7 +1006,12 @@ function addMsg(chId, m, live){
   if (store[chId].length > 120) store[chId] = store[chId].slice(-120);
   if (live) log('← принято от ' + (m.nick || '?') + ' в "' + chId + '"');
   if (live && chId === cur) renderMsgs();
-  if (live && chId !== cur) toast('💬 ' + (m.nick || 'Кто-то') + ': ' + (m.type === 'text' ? m.text.slice(0,40) : 'вложение'));
+  if (live && chId !== cur){
+    unread[chId] = (unread[chId] || 0) + 1;
+    renderChannels();
+    const c = channels.find(x => x.id === chId);
+    showBanner((c ? (c.ic + ' ' + c.name) : 'Канал'), (m.nick || 'Кто-то'), (m.type === 'text' ? String(m.text || '') : 'вложение'), chId);
+  }
 }
 
 /* ================= CHANNELS ================= */
