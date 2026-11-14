@@ -1252,6 +1252,15 @@ addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   closeEmoji(); closeCreate(); closeViewer(); closeDrawer();
 });
+
+/* вернулись в приложение — сразу догоняем пропущенное */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !me) return;
+  pollSince = Math.floor(Date.now() / 1000) - 60;
+  pollBusy = false;
+  pollTick();
+  if (cur) ntfyHistory(cur);
+});
 </script>
 </body>
 </html>
