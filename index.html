@@ -526,6 +526,8 @@ let typingSentAt = 0;
 let rec = null, recChunks = [], recTimer = null, recSec = 0;
 let outbox = [];     // очередь сообщений, если связи не было
 let netStarted = Date.now();
+let ntfyAlive = false;   // работает ли резервный HTTP-канал
+const ntfySubs = {};     // topic -> EventSource
 
 /* ================= UTILS ================= */
 const $ = id => document.getElementById(id);
