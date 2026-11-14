@@ -468,7 +468,7 @@ const tMsg  = c => BASE + 'msg_'  + c;
 const tType = c => BASE + 'typ_'  + c;
 
 /* ================= STATE ================= */
-let client = null, brokerIdx = 0;
+let clients = [];
 let me = null;
 let channels = [];
 let cur = null;
