@@ -1345,6 +1345,7 @@ function joinChannel(id){
   subscribeChannel(id);
   wsConnect(id);
   wsPub(id, { t: 'who', room: id });   // спросим у сервера, кто уже в канале
+  setTimeout(presencePing, 400);       // и сразу объявим себя в канале
   ntfySubAll();
   ntfyHistory(id);
   askSync(id);
