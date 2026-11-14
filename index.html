@@ -1242,7 +1242,15 @@ function mergeDir(d){
   const map = new Map(channels.map(c => [c.id, c]));
   d.forEach(c => {
     if (!c || !c.id) return;
-    if (c.del){ deleted.add(c.id); map.delete(c.id); return; }
+    if (c.del){
+      /* канал удалён кем-то другим — чистим и локальные следы, иначе он
+         остаётся в памяти (сообщения, счётчик, список «в сети») */
+      deleted.add(c.id);
+      map.delete(c.id);
+      delete store[c.id]; delete seen[c.id]; delete unread[c.id]; delete online[c.id];
+      try { if (wsSocks[c.id]){ wsSocks[c.id].close(); delete wsSocks[c.id]; } } catch(e){}
+      return;
+    }
     if (deleted.has(c.id)) return;
     map.set(c.id, Object.assign({}, map.get(c.id) || {}, c));
   });
