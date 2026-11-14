@@ -670,7 +670,14 @@ function connectBroker(url){
 function pub(topic, payload, opts){
   let sent = 0;
   clients.forEach(c => { if (c.connected){ try { c.publish(topic, payload, opts || {}); sent++; } catch(e){} } });
+  // связи не было — придержим сообщение и отправим, как только подключимся
+  if (!sent && topic.indexOf(BASE + 'msg_') === 0) outbox.push({ topic, payload });
   return sent;
+}
+function flushOutbox(){
+  if (!outbox.length) return;
+  const q = outbox; outbox = [];
+  q.forEach(m => pub(m.topic, m.payload));
 }
 
 async function onMQTT(topic, payload){
