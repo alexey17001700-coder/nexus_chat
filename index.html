@@ -684,6 +684,8 @@ function enterApp(){
   ntfySub(nDir());
   ntfyDirPull();
   if (cur){ ntfySub(nMsg(cur)); ntfySub(nTyp(cur)); ntfyHistory(cur); }
+  pollSince = Math.floor(Date.now() / 1000) - 5;
+  startPolling();
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
 
