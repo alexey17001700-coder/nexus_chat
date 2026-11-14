@@ -684,11 +684,12 @@ function enterApp(){
   loadLocalChannels();
   connectMQTT();
   /* резервный HTTP-канал поднимаем сразу — он не зависит от MQTT */
-  ntfySub(nDir());
+  ntfySubAll();
   ntfyDirPull();
-  if (cur){ ntfySub(nMsg(cur)); ntfySub(nTyp(cur)); ntfyHistory(cur); }
+  if (cur) ntfyHistory(cur);
   pollSince = Math.floor(Date.now() / 1000) - 5;
   startPolling();
+  log('старт: канал=' + cur + ', каналов=' + channels.length);
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
 
