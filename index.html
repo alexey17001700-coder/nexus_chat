@@ -1103,6 +1103,7 @@ async function pushMsg(obj){
     const payload = JSON.stringify(env);
     const sent = pub(tMsg(ch), payload);
     const sentHttp = await ntfyPub(nMsg(ch), payload);
+    log('→ отправка в "' + ch + '": MQTT ' + sent + '/' + clients.length + ', HTTP ' + (sentHttp ? 'ок' : 'нет'));
     if (!sent && !sentHttp) toast('Нет связи — сообщение пока только у тебя');
     /* история для новых участников: тяжёлые вложения не кладём, иначе брокер рвёт соединение */
     const hist = (store[ch] || []).slice(-40).map(x => {
