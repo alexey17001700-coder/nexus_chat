@@ -627,31 +627,47 @@ function enterApp(){
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
 
-/* ================= MQTT ================= */
+/* ================= MQTT (мульти-брокер: связь идёт через ВСЕ узлы сразу) ================= */
 function setNet(on, txt){
   $('netDot').classList.toggle('on', on);
   $('netTxt').textContent = txt;
 }
+function updateNet(){
+  const live = clients.filter(c => c.connected).length;
+  if (live > 0) setNet(true, 'в сети · ' + live + '/' + BROKERS.length);
+  else setNet(false, 'подключение…');
+}
 function connectMQTT(){
-  const url = BROKERS[brokerIdx % BROKERS.length];
-  setNet(false, 'подключение…');
-  try { client = mqtt.connect(url, { clientId: 'nx_' + me.id + '_' + Math.random().toString(16).slice(2,7), clean: true, reconnectPeriod: 4000, connectTimeout: 9000 }); }
-  catch(e){ setNet(false, 'ошибка сети'); return; }
-
-  client.on('connect', () => {
-    setNet(true, 'в сети');
-    client.subscribe(T_DIR);
-    if (cur) subscribeChannel(cur);
+  clients.forEach(c => { try { c.end(true); } catch(e){} });
+  clients = [];
+  if (typeof mqtt === 'undefined'){ setNet(false, 'нет библиотеки связи'); return; }
+  BROKERS.forEach((url, i) => setTimeout(() => connectBroker(url), i * 250));
+  setTimeout(updateNet, 2500);
+}
+function connectBroker(url){
+  let c;
+  try {
+    c = mqtt.connect(url, {
+      clientId: 'nx_' + me.id + '_' + Math.random().toString(16).slice(2, 8),
+      clean: true, reconnectPeriod: 5000, connectTimeout: 12000, keepalive: 30
+    });
+  } catch(e){ return; }
+  clients.push(c);
+  c.on('connect', () => {
+    updateNet();
+    c.subscribe(T_DIR);
+    if (cur){ c.subscribe(tHist(cur)); c.subscribe(tMsg(cur)); c.subscribe(tType(cur)); }
   });
-  client.on('reconnect', () => setNet(false, 'переподключение…'));
-  client.on('close', () => setNet(false, 'нет связи'));
-  client.on('error', () => {
-    setNet(false, 'нет связи');
-    brokerIdx++;
-    try { client.end(true); } catch(e){}
-    setTimeout(connectMQTT, 1200);
-  });
-  client.on('message', onMQTT);
+  c.on('reconnect', updateNet);
+  c.on('close', updateNet);
+  c.on('error', updateNet);
+  c.on('message', onMQTT);
+}
+/* публикуем во все узлы — сообщение дойдёт, даже если устройства сидят на разных брокерах */
+function pub(topic, payload, opts){
+  let sent = 0;
+  clients.forEach(c => { if (c.connected){ try { c.publish(topic, payload, opts || {}); sent++; } catch(e){} } });
+  return sent;
 }
 
 async function onMQTT(topic, payload){
