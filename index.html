@@ -1159,7 +1159,14 @@ async function wsOnMessage(room, raw){
     return;
   }
   /* служебные пакеты сервера */
-  if (d.t === 'hello' || d.t === 'welcome' || d.t === 'presence' || d.t === 'pong') return;
+  if (d.t === 'hello' || d.t === 'pong') return;
+  /* «кто в сети»: сервер присылает список участников комнаты.
+     Раньше пакет игнорировался — поэтому в шапке не было видно, кто онлайн. */
+  if (d.t === 'presence' || d.t === 'welcome'){
+    const r = d.room || room;
+    if (r !== '__dir__' && Array.isArray(d.users)){ online[r] = d.users; renderOnline(); }
+    return;
+  }
   if (d.t === 'ping'){ wsPub(room, { t: 'pong' }); return; }
   if (d.t === 'error'){ log('WS ошибка: ' + d.error); return; }
 
