@@ -778,7 +778,7 @@ function createChannel(){
   const ch = { id, name, ic, by: me.nick, sec: randSecret() };
   channels.push(ch);
   saveChannels();
-  if (client && client.connected) client.publish(T_DIR, JSON.stringify(channels), { retain: true });
+  pub(T_DIR, JSON.stringify(channels), { retain: true });
   closeCreate();
   joinChannel(id);
   toast('Канал создан ✨');
