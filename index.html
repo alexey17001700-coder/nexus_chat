@@ -1057,9 +1057,9 @@ async function pollTick(){
 /* кнопка 🔄 — принудительная синхронизация + панель диагностики */
 function forceSync(){
   const live = clients.filter(c => c.connected).length;
-  toast('Связь: MQTT ' + live + '/' + BROKERS.length + ' · HTTP ' + (ntfyAlive ? '✓' : '—'));
+  toast('Связь: Vivo ' + (wsAlive() ? '✓' : '—') + ' · MQTT ' + live + '/' + BROKERS.length + ' · HTTP ' + (ntfyAlive ? '✓' : '—'));
   log('— ручная синхронизация —');
-  log('MQTT: ' + live + '/' + BROKERS.length + ' · HTTP: ' + (ntfyAlive ? 'ок' : 'нет'));
+  log('MQTT: ' + live + '/' + BROKERS.length + ' · Vivo WS: ' + (wsAlive() ? 'ок' : 'нет') + ' · HTTP: ' + (ntfyAlive ? 'ок' : 'нет'));
   pollSince = Math.floor(Date.now() / 1000) - 60;
   pollBusy = false;
   clients.forEach(c => { try { if (!c.connected) c.reconnect(); } catch(e){} });
