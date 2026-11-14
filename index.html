@@ -591,6 +591,7 @@ const ntfySubs = {};     // topic -> EventSource
 /* свой WebSocket на Vivo */
 const wsSocks = {};      // room -> WebSocket
 const wsRetry = {};      // room -> таймер переподключения
+const wsOutbox = {};     // room -> очередь сообщений до установки связи
 let lastWsOk = 0;        // когда WS последний раз отвечал
 
 /* ================= UTILS ================= */
