@@ -1243,8 +1243,9 @@ async function sendTyping(){
   try {
     const env = E2E ? Object.assign({ e: 1 }, await encryptObj(secretOf(cur), { id: me.id, nick: me.nick })) : { id: me.id, nick: me.nick };
     const payload = JSON.stringify(env);
+    /* «печатает…» шлём только по MQTT — ntfy.sh имеет лимит запросов,
+       и частые публикации блокировали доставку самих сообщений */
     pub(tType(cur), payload);
-    ntfyPub(nTyp(cur), payload);
   } catch(e){}
 }
 function showTyping(nick){
