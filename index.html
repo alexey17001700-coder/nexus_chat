@@ -1006,7 +1006,8 @@ async function onNtfy(topic, body){
   const chId = topic.slice(NP.length).replace(/^(msg_|typ_|sync_)/, '');
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
   if (topic.startsWith(NP + 'sync_')){
-    if (d && d.from !== me.id) sendHistory(chId);
+    const k = 'n' + chId + (d && d.at || 0);
+    if (d && d.from !== me.id && !seenSync.has(k)){ seenSync.add(k); sendHistory(chId); }
     return;
   }
   if (topic.startsWith(NP + 'msg_')){
