@@ -1075,9 +1075,12 @@ async function ntfyDirPull(){
    Основной транспорт: wss://shtab-boss.duckdns.org:8443/ws
    Одно соединение на комнату. После открытия отправляем {t:"join", room, id}.
    Сервер держит историю комнаты и рассылает сообщения всем участникам сразу. */
+/* индикатор в шапке привязан к РЕАЛЬНОМУ состоянию WebSocket:
+   зелёный — есть хотя бы одно ОТКРЫТОЕ соединение (readyState === WebSocket.OPEN),
+   красный — ни одного живого сокета (идёт авто-переподключение) */
 function wsAlive(){
-  for (const k in wsSocks){ const s = wsSocks[k]; if (s && s.readyState === 1) return true; }
-  return Date.now() - lastWsOk < 30000;
+  for (const k in wsSocks){ const s = wsSocks[k]; if (s && s.readyState === WebSocket.OPEN) return true; }
+  return false;
 }
 function wsUrl(){ return VIVO; }
 
