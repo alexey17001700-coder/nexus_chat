@@ -1958,16 +1958,67 @@ async function ensurePush(){
 function vivoHttp(){ return VIVO.replace(/^ws/, 'http').replace(/\/ws$/, ''); }
 
 async function togglePush(){
+  const env = pushEnv();
+  log('push: разрешение=' + env.perm + ' · поддержка=' + pushSupported() + ' · ключ=' + (vapidKey ? 'есть' : 'нет'));
+  log('push: ios=' + env.ios + ' · на экране Домой=' + env.standalone + ' · встроенный браузер=' + env.webview);
+
+  /* iPhone: уведомления доступны только приложению с «Экрана Домой» */
+  if (env.ios && !env.standalone){
+    toast('iPhone: «Поделиться» → «На экран Домой», открой с иконки — и уведомления заработают');
+    return;
+  }
+  /* встроенный браузер Telegram / VK / Instagram разрешения не даёт */
+  if (env.webview){ toast('Открой чат в Chrome или Safari — во встроенном браузере уведомления запрещены'); return; }
   if (!pushSupported()){ toast('Этот браузер не умеет уведомления'); return; }
-  if (!vapidKey){ toast('Сервер уведомлений ещё не ответил — попробуй через пару секунд'); return; }
-  if (Notification.permission === 'denied'){ toast('Уведомления запрещены в настройках браузера'); return; }
+  if (!vapidKey){ toast('Сервер уведомлений ещё не ответил — подожди пару секунд'); return; }
+  if (Notification.permission === 'denied'){
+    toast('Уведомления запрещены: нажми 🔒 у адреса → Разрешения → Уведомления → Разрешить');
+    return;
+  }
   /* уже включены — выключаем */
   if (Notification.permission === 'granted' && pushSub){ await pushOff(); return; }
+
   let perm = Notification.permission;
-  if (perm !== 'granted') perm = await Notification.requestPermission();
-  if (perm !== 'granted'){ toast('Разрешение не выдано'); pushBtnUI(); return; }
+  if (perm !== 'granted'){
+    try { perm = await Notification.requestPermission(); }
+    catch(e){ log('! push: requestPermission упал — ' + e); perm = 'ошибка'; }
+  }
+  if (perm !== 'granted'){
+    if (perm === 'default') toast('Окно разрешения не появилось. Обнови страницу и нажми 🔔 ещё раз');
+    else toast('Браузер запретил уведомления. Нажми 🔒 у адреса → Разрешения → Уведомления → Разрешить');
+    log('push: ИТОГ разрешение=' + perm);
+    pushBtnUI();
+    return;
+  }
   await ensurePush();
-  toast(pushSub ? 'Уведомления включены 🔔' : 'Не удалось включить уведомления');
+  if (pushSub){
+    /* показываем сразу — человек видит, что канал работает */
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification('🔔 Уведомления включены', {
+        body: 'Так будут приходить сообщения из чата', tag: 'nx-test', icon: './icons/icon.svg'
+      });
+    } catch(e){}
+    toast('Уведомления включены 🔔');
+  } else {
+    toast('Не удалось включить уведомления — проверь связь с сервером');
+  }
+}
+/* 🧪 тест: показать уведомление прямо сейчас + вывести разбор в диагностику */
+async function testPush(){
+  const env = pushEnv();
+  log('— тест уведомлений —');
+  log('push: поддержка=' + pushSupported() + ' · разрешение=' + env.perm);
+  log('push: ключ VAPID=' + (vapidKey ? 'есть' : 'НЕТ') + ' · подписка=' + (pushSub ? 'есть' : 'нет'));
+  log('push: ios=' + env.ios + ' · на экране Домой=' + env.standalone + ' · встроенный браузер=' + env.webview);
+  if (env.ios && !env.standalone){ toast('iPhone: добавь на «Экран Домой» — иначе уведомлений не будет'); return; }
+  if (!pushSupported()){ toast('Браузер не поддерживает уведомления'); return; }
+  if (Notification.permission !== 'granted'){ toast('Сначала включи уведомления (☰ → 🔔)'); return; }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification('🔔 Тест уведомления', { body: 'Если видишь это — уведомления работают', tag: 'nx-test', icon: './icons/icon.svg' });
+    toast('Тестовое уведомление отправлено');
+  } catch(e){ log('! push тест: ' + e); toast('Не удалось показать уведомление'); }
 }
 async function pushOff(){
   const ep = pushSub ? pushSub.endpoint : '';
