@@ -1104,7 +1104,12 @@ function wsConnect(room){
     if (wsSocks[room] === s) delete wsSocks[room];
     updateNet();
     clearTimeout(wsRetry[room]);
-    wsRetry[room] = setTimeout(() => wsConnect(room), 3000);
+    /* авто-переподключение с нарастающей паузой: 1с → 2с → 4с → 8с … максимум 15с.
+       Так не долбим сервер при обрыве, но и не ждём вечно. */
+    wsTries[room] = (wsTries[room] || 0) + 1;
+    const delay = Math.min(1000 * Math.pow(2, wsTries[room] - 1), 15000);
+    log('WS обрыв (' + room + ') — переподключение через ' + Math.round(delay/1000) + 'с');
+    wsRetry[room] = setTimeout(() => wsConnect(room), delay);
   };
   s.onerror = () => { try { s.close(); } catch(e){} };
 }
