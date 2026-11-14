@@ -1,6 +1,6 @@
 /* Nexus Chat — service worker (network-first, чтобы обновления приходили сразу) */
-const CACHE = 'nexus-chat-v7';
-const ASSETS = ['./', './index.html', './manifest.json'];
+const CACHE = 'nexus-chat-v3';
+const ASSETS = ['./', './index.html', './manifest.json', './icons/icon.svg'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -14,6 +14,8 @@ self.addEventListener('activate', e => {
   );
 });
 
+self.addEventListener('message', e => { if (e.data === 'skipWaiting') self.skipWaiting(); });
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -21,7 +23,7 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return; // внешние (шрифты, mqtt) — мимо кэша
 
   e.respondWith(
-    fetch(req).then(res => {
+    fetch(req, { cache: 'no-store' }).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
       return res;
