@@ -678,6 +678,10 @@ function enterApp(){
   $('drName').textContent = me.nick;
   loadLocalChannels();
   connectMQTT();
+  /* резервный HTTP-канал поднимаем сразу — он не зависит от MQTT */
+  ntfySub(nDir());
+  ntfyDirPull();
+  if (cur){ ntfySub(nMsg(cur)); ntfySub(nTyp(cur)); ntfyHistory(cur); }
   if (!localStorage.getItem('nx_tour')) setTimeout(startTour, 700);
 }
 
