@@ -694,8 +694,9 @@ function setNet(on, txt){
 }
 function updateNet(){
   const live = clients.filter(c => c.connected).length;
-  if (live > 0){ setNet(true, 'в сети · ' + live + '/' + BROKERS.length); return; }
-  if (ntfyAlive){ setNet(true, 'в сети · HTTP'); return; }
+  const httpOk = ntfyAlive && (Date.now() - lastHttpOk < 25000);
+  if (live > 0){ setNet(true, 'в сети · MQTT ' + live + '/' + BROKERS.length + (httpOk ? ' + HTTP' : '')); return; }
+  if (httpOk){ setNet(true, 'в сети · HTTP'); return; }
   setNet(false, (Date.now() - netStarted > 12000) ? 'нет связи — проверь интернет' : 'подключение…');
 }
 async function connectMQTT(){
