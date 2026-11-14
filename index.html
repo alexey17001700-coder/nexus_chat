@@ -1093,7 +1093,7 @@ function wsConnect(room){
   try { s = new WebSocket(wsUrl()); } catch(e){ return; }
   wsSocks[room] = s;
   s.onopen = () => {
-    lastWsOk = Date.now(); updateNet(); log('WS подключён: ' + room);
+    lastWsOk = Date.now(); wsTries[room] = 0; updateNet(); log('WS подключён: ' + room);
     /* сервер nexus_ws ждёт явный join комнаты: {t:"join", room, id} */
     try { s.send(JSON.stringify({ t: 'join', room, id: me.id })); } catch(e){}
     const q = wsOutbox[room];
