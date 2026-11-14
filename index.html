@@ -529,6 +529,10 @@ body::before{
 <!-- diagnostics -->
 <div id="diag">
   <div class="dg-head"><span>🛰 Диагностика связи</span><button onclick="closeDiag()">✕</button></div>
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <button class="btn-main" style="padding:10px;font-size:13px" onclick="testLink()">Тест связи 🧪</button>
+    <button class="btn-main" style="padding:10px;font-size:13px" onclick="forceSync()">Синхронизировать 🔄</button>
+  </div>
   <div id="diagLog"></div>
 </div>
 
