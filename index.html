@@ -780,12 +780,23 @@ async function onMQTT(topic, payload){
   }
 }
 
-function subscribeChannel(id){
+/* Подписываемся на ВСЕ каналы, а не только на открытый.
+   Раньше сообщение, пришедшее в другой канал, терялось навсегда. */
+function subscribeAll(){
+  const ids = channels.map(c => c.id);
+  if (cur && ids.indexOf(cur) < 0) ids.push(cur);
   clients.forEach(c => {
     if (!c.connected) return;
-    try { c.subscribe(tHist(id)); c.subscribe(tMsg(id)); c.subscribe(tType(id)); } catch(e){}
+    ids.forEach(id => {
+      try {
+        c.subscribe(tHist(id), { qos: 1 });
+        c.subscribe(tMsg(id), { qos: 1 });
+        c.subscribe(tType(id));
+      } catch(e){}
+    });
   });
 }
+function subscribeChannel(id){ subscribeAll(); }
 
 /* ================= РЕЗЕРВНЫЙ КАНАЛ (ntfy.sh, обычный HTTPS) =================
    Работает даже там, где WebSocket/MQTT заблокирован мобильным оператором.
