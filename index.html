@@ -588,6 +588,10 @@ let netStarted = Date.now();
 let ntfyAlive = false;   // работает ли резервный HTTP-канал
 let lastHttpOk = 0;      // когда HTTP-канал последний раз отвечал
 const ntfySubs = {};     // topic -> EventSource
+/* свой WebSocket на Vivo */
+const wsSocks = {};      // room -> WebSocket
+const wsRetry = {};      // room -> таймер переподключения
+let lastWsOk = 0;        // когда WS последний раз отвечал
 
 /* ================= UTILS ================= */
 const $ = id => document.getElementById(id);
