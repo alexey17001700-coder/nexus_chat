@@ -630,6 +630,7 @@ let rec = null, recChunks = [], recTimer = null, recSec = 0;
 let outbox = [];     // очередь сообщений, если связи не было
 let unread = {};     // channelId -> счётчик непрочитанных
 let online = {};     // channelId -> [{id, nick}] кто сейчас в канале
+let deleted = new Set(); // id каналов, удалённых пользователем (метка удаления)
 let diag = { lastSend: 0, lastRecv: 0, lastPoll: 0, lastErr: '' };
 const seenSync = new Set();
 let netStarted = Date.now();
