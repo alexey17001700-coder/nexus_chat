@@ -932,6 +932,7 @@ async function onMQTT(topic, payload){
     return;
   }
   if (topic.startsWith(BASE + 'msg_')){
+    if (d && d.kind === 'typing'){ await takePresence(chId, d); return; }
     const m = await unpackMsg(chId, d);
     if (m) addMsg(chId, m, true);
     return;
