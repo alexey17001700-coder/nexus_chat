@@ -1244,7 +1244,7 @@ function createChannel(){
   channels.push(ch);
   saveChannels();
   pub(T_DIR, JSON.stringify(channels), { retain: true });
-  wsPub('directory', { t: 'dir', items: channels });
+  wsPub('__dir__', { t: 'dir', d: channels });
   ntfyPub(nDir(), JSON.stringify(channels.slice(-20)));
   closeCreate();
   joinChannel(id);
