@@ -836,6 +836,7 @@ function enterApp(){
   $('drAv').textContent = me.nick[0].toUpperCase();
   $('drAv').style.background = me.color;
   $('drName').textContent = me.nick;
+  loadMembers();
   loadLocalChannels();
   connectMQTT();
   wsSubAll();
