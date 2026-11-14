@@ -1715,7 +1715,7 @@ if ('serviceWorker' in navigator){
 /* Esc закрывает модалки (удобно при тесте с компьютера) */
 addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  closeEmoji(); closeCreate(); closeViewer(); closeDrawer(); closeDiag(); closeOnline();
+  closeEmoji(); closeCreate(); closeDelete(); closeViewer(); closeDrawer(); closeDiag(); closeOnline();
 });
 
 /* вернулись в приложение — сразу догоняем пропущенное */
