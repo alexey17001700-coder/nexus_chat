@@ -1884,11 +1884,14 @@ addEventListener('keydown', e => {
 
 /* вернулись в приложение — сразу догоняем пропущенное */
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden || !me) return;
+  if (!me) return;
+  /* свернули приложение — помечаем себя офлайн, чтобы в списке не висел «призрак» */
+  if (document.hidden){ sayBye(); return; }
   pollSince = Math.floor(Date.now() / 1000) - 60;
   pollBusy = false;
   pollTick();
   if (cur) ntfyHistory(cur);
+  presencePing();   // вернулись — объявляемся в сети снова
 });
 </script>
 </body>
