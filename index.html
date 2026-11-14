@@ -648,7 +648,7 @@ function setNet(on, txt){
 function updateNet(){
   const live = clients.filter(c => c.connected).length;
   if (live > 0){ setNet(true, 'в сети · ' + live + '/' + BROKERS.length); return; }
-  setNet(false, Date.now() - netStarted > 12000 ? 'нет связи — проверь интернет' : 'подключение…');
+  setNet(false, (Date.now() - netStarted > 12000) ? 'нет связи — проверь интернет' : 'подключение…');
 }
 function connectMQTT(){
   clients.forEach(c => { try { c.end(true); } catch(e){} });
