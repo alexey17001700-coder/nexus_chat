@@ -488,6 +488,7 @@ let typingTimers = {};
 let typingSentAt = 0;
 let rec = null, recChunks = [], recTimer = null, recSec = 0;
 let outbox = [];     // очередь сообщений, если связи не было
+let netStarted = Date.now();
 
 /* ================= UTILS ================= */
 const $ = id => document.getElementById(id);
