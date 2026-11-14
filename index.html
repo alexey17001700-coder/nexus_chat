@@ -915,8 +915,17 @@ async function pollTick(){
   const topics = [nDir()];
   const ids = channels.map(c => c.id).slice(0, 4);
   if (cur && ids.indexOf(cur) < 0) ids.unshift(cur);
-  ids.forEach(id => { topics.push(nMsg(id)); topics.push(nTyp(id)); });
-  const res = await ntfyPoll(topics, since);
+  ids.forEach(id => { topics.push(nMsg(id)); topics.push(nTyp(id)); topics.push(nSync(id)); });
+  let res = await ntfyPoll(topics, since);
+  if (!res.ok){
+    /* групповой запрос не прошёл — опрашиваем темы по одной */
+    res = { ok: true, items: [] };
+    for (const t of topics){
+      const one = await ntfyPoll([t], since);
+      if (!one.ok){ res.ok = false; continue; }
+      res.items = res.items.concat(one.items);
+    }
+  }
   if (res.ok){
     for (const it of res.items){
       let t = it.topic;
