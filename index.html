@@ -1133,12 +1133,17 @@ async function wsOnMessage(room, raw){
   updateNet();
   if (!d || !d.t) return;
 
-  /* сервер отдаёт историю комнаты сразу после join */
+  /* сервер отдаёт историю комнаты сразу после join.
+     ВАЖНО: nexus_ws присылает items как МАССИВ ОБЪЕКТОВ (он уже распарсил их у себя
+     в joinRoom → items.push(JSON.parse(raw))). Поэтому JSON.parse нужен ТОЛЬКО
+     если элемент пришёл строкой. Двойной парсинг объекта бросал исключение,
+     сообщение молча пропускалось — история не подтягивалась вообще. */
   if (d.t === 'history'){
     const r = d.room || room;
     for (const it of (d.items || [])){
-      let x; try { x = JSON.parse(it); } catch(e){ continue; }
-      await wsDispatch(r, x);
+      let x;
+      try { x = (typeof it === 'string') ? JSON.parse(it) : it; } catch(e){ continue; }
+      if (x) await wsDispatch(r, x);
     }
     if (r === cur) renderMsgs();
     return;
