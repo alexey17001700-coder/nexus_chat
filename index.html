@@ -1021,7 +1021,9 @@ async function sendTyping(){
   if (!cur) return;
   try {
     const env = E2E ? Object.assign({ e: 1 }, await encryptObj(secretOf(cur), { id: me.id, nick: me.nick })) : { id: me.id, nick: me.nick };
-    pub(tType(cur), JSON.stringify(env));
+    const payload = JSON.stringify(env);
+    pub(tType(cur), payload);
+    ntfyPub(nTyp(cur), payload);
   } catch(e){}
 }
 function showTyping(nick){
