@@ -604,6 +604,7 @@ const ntfySubs = {};     // topic -> EventSource
 const wsSocks = {};      // room -> WebSocket
 const wsRetry = {};      // room -> таймер переподключения
 const wsOutbox = {};     // room -> очередь сообщений до установки связи
+const wsTries = {};      // room -> число неудачных попыток (для backoff)
 let lastWsOk = 0;        // когда WS последний раз отвечал
 
 /* ================= UTILS ================= */
