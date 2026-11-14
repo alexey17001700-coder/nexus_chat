@@ -1733,7 +1733,13 @@ function renderOnline(){
       </div>
     </div>`).join('');
 }
-function openOnline(){ renderOnline(); $('onlineModal').classList.add('on'); }
+function openOnline(){
+  const s = wsSocks[cur];
+  if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'who', room: cur })); } catch(e){} }
+  presencePing();
+  renderOnline();
+  $('onlineModal').classList.add('on');
+}
 function closeOnline(){ $('onlineModal').classList.remove('on'); }
 
 /* ================= DRAWER ================= */
