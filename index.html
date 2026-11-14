@@ -618,6 +618,7 @@ async function unpackMsg(chId, p){
       // ключ канала мог ещё не прийти из справочника — подождём и попробуем снова
       const known = channels.find(x => x.id === chId);
       if (known && known.sec) break;
+      if (!known) ntfyDirPull();   // канал неизвестен — подтянем справочник с ключом
       await new Promise(r => setTimeout(r, 700));
     }
   }
