@@ -555,12 +555,18 @@ async function packMsg(chId, m){
 }
 async function unpackMsg(chId, p){
   if (!p || p.e !== 1) return p;
-  try {
-    const sec = await decryptObj(secretOf(chId), p);
-    return Object.assign({ id: p.id, time: p.time }, sec);
-  } catch(e){
-    return { id: p.id || uid(), time: p.time || Date.now(), type: 'sys', text: '🔒 Сообщение зашифровано другим ключом' };
+  for (let attempt = 0; attempt < 3; attempt++){
+    try {
+      const sec = await decryptObj(secretOf(chId), p);
+      return Object.assign({ id: p.id, time: p.time }, sec);
+    } catch(e){
+      // ключ канала мог ещё не прийти из справочника — подождём и попробуем снова
+      const known = channels.find(x => x.id === chId);
+      if (known && known.sec) break;
+      await new Promise(r => setTimeout(r, 700));
+    }
   }
+  return { id: p.id || uid(), time: p.time || Date.now(), type: 'sys', text: '🔒 Сообщение зашифровано другим ключом' };
 }
 
 /* ================= AUTH ================= */
