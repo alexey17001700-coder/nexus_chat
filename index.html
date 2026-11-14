@@ -1214,6 +1214,7 @@ async function pushMsg(obj){
 /* Просим участников канала прислать историю — на случай, если retained не дошёл */
 function askSync(chId){
   if (!chId) return;
+  if (seenSync.size > 400) seenSync.clear();
   const req = JSON.stringify({ from: me.id, at: Date.now() });
   pub(tSync(chId), req);
   ntfyPub(nSync(chId), req);
