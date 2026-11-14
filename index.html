@@ -530,6 +530,7 @@ let rec = null, recChunks = [], recTimer = null, recSec = 0;
 let outbox = [];     // очередь сообщений, если связи не было
 let netStarted = Date.now();
 let ntfyAlive = false;   // работает ли резервный HTTP-канал
+let lastHttpOk = 0;      // когда HTTP-канал последний раз отвечал
 const ntfySubs = {};     // topic -> EventSource
 
 /* ================= UTILS ================= */
