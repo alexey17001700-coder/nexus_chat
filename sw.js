@@ -1,5 +1,5 @@
 /* Nexus Chat — service worker (network-first, чтобы обновления приходили сразу) */
-const CACHE = 'nexus-chat-v1';
+const CACHE = 'nexus-chat-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon.svg'];
 
 self.addEventListener('install', e => {
