@@ -607,7 +607,8 @@ function doAuth(){
 }
 function logout(){
   closeDrawer();
-  if (client){ try { client.end(true); } catch(e){} client = null; }
+  clients.forEach(c => { try { c.end(true); } catch(e){} });
+  clients = [];
   localStorage.removeItem('nx_me');
   me = null; cur = null; channels = []; store = {}; seen = {};
   $('appScreen').style.display = 'none';
