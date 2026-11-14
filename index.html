@@ -1234,6 +1234,8 @@ async function wsDispatch(room, d){
   if (d.t === 'dir'){ mergeDir(d.d); return; }
   /* сообщение: {t:"msg", room, d:<envelope>} */
   if (d.t === 'msg'){
+    /* presence-пульс помечен kind:"typing" — в чат его не выводим */
+    if (d.d && d.d.kind === 'typing'){ await takePresence(room, d.d); return; }
     const m = await unpackMsg(room, d.d);
     if (m) addMsg(room, m, true);
     return;
