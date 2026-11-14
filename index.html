@@ -1255,6 +1255,8 @@ function addMsg(chId, m, live){
 /* ================= CHANNELS ================= */
 function loadLocalChannels(){
   try { channels = JSON.parse(localStorage.getItem('nx_chans') || '[]'); } catch(e){ channels = []; }
+  try { deleted = new Set(JSON.parse(localStorage.getItem('nx_deleted') || '[]')); } catch(e){ deleted = new Set(); }
+  channels = channels.filter(c => c && c.id && !deleted.has(c.id));
   if (!channels.length){
     channels = [
       { id: 'general', name: 'Общий', ic: '💬' },
