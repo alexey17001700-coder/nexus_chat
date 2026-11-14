@@ -832,11 +832,15 @@ function sendText(){
   el.value = ''; autoGrow(el);
 }
 
-function sendTyping(){
+async function sendTyping(){
   const now = Date.now();
   if (now - typingSentAt < 1800) return;
   typingSentAt = now;
-  if (client && client.connected && cur) client.publish(tType(cur), JSON.stringify({ id: me.id, nick: me.nick }));
+  if (!client || !client.connected || !cur) return;
+  try {
+    const env = E2E ? await encryptObj(secretOf(cur), { id: me.id, nick: me.nick }) : { id: me.id, nick: me.nick };
+    client.publish(tType(cur), JSON.stringify(env));
+  } catch(e){}
 }
 function showTyping(nick){
   $('typing').textContent = nick + ' печатает…';
