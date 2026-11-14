@@ -745,7 +745,7 @@ function createChannel(){
   const ic = ($('inChanIc').value.trim() || '💬').slice(0,2);
   if (name.length < 2){ toast('Название — минимум 2 символа'); return; }
   const id = 'c' + uid();
-  const ch = { id, name, ic, by: me.nick };
+  const ch = { id, name, ic, by: me.nick, sec: randSecret() };
   channels.push(ch);
   saveChannels();
   if (client && client.connected) client.publish(T_DIR, JSON.stringify(channels), { retain: true });
