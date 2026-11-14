@@ -1898,9 +1898,12 @@ function urlB64ToU8(base64){
 function pushBtnUI(){
   const b = $('pushBtn');
   if (!b) return;
+  const env = pushEnv();
+  b.disabled = false;
+  if (env.ios && !env.standalone){ b.textContent = '🔔 На «Экран Домой»'; return; }
   if (!pushSupported()){ b.textContent = '🔕 Не поддерживается'; b.disabled = true; return; }
+  if (Notification.permission === 'denied'){ b.textContent = '🔕 Запрещены (🔒 → Разрешения)'; return; }
   if (!vapidKey){ b.textContent = '🔔 Уведомления…'; return; }
-  if (Notification.permission === 'denied'){ b.textContent = '🔕 Запрещены'; return; }
   b.textContent = pushSub ? '🔔 Уведомления: вкл' : '🔔 Уведомления: выкл';
 }
 /* сервер сообщил публичный ключ */
