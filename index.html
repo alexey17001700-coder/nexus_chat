@@ -1094,6 +1094,7 @@ async function onNtfy(topic, body){
     return;
   }
   if (topic.startsWith(NP + 'msg_')){
+    if (d && d.kind === 'typing'){ await takePresence(chId, d); return; }
     const m = await unpackMsg(chId, d);
     if (m) addMsg(chId, m, true);
     return;
