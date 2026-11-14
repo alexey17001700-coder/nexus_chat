@@ -936,6 +936,7 @@ function createChannel(){
 /* ================= MESSAGES ================= */
 function renderMsgs(){
   const box = $('msgs');
+  if (!box || !cur) return;
   const list = store[cur] || [];
   if (!list.length){
     const c = channels.find(x => x.id === cur);
