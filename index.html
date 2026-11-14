@@ -908,6 +908,8 @@ function joinChannel(id){
   if (!store[id]){ store[id] = []; seen[id] = new Set(); }
   subscribeChannel(id);
   ntfySub(nMsg(id)); ntfySub(nTyp(id)); ntfyHistory(id);
+  pollSince = Math.floor(Date.now() / 1000) - 5;
+  pollTick();
   renderMsgs();
   renderChannels();
   closeDrawer();
