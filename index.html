@@ -1486,7 +1486,7 @@ function renderMsg(m){
   const av = `<div class="av" style="background:${m.color || colorOf(m.nick||'?')}">${esc((m.nick||'?')[0].toUpperCase())}</div>`;
   let body = '';
   if (m.type === 'text'){
-    body = `<div class="m-text">${linkify(esc(m.text))}</div>`;
+    body = `<div class="m-text">${fmtText(m.text)}</div>`;
   } else if (m.type === 'image'){
     body = m.trimmed
       ? `<div class="m-file"><span class="fi">🖼️</span><span style="min-width:0"><span class="fn">Фото</span><br><span class="fs">в истории не сохраняется</span></span></div>`
