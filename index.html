@@ -1513,6 +1513,54 @@ function renderMsg(m){
   </div>`;
 }
 function linkify(s){ return s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
+
+/* ================= КОД В СООБЩЕНИЯХ =================
+   Текст разбивается по тройным бэктикам: нечётные части — блоки кода.
+   Каждый блок получает кнопку «📋 Копировать» в правом верхнем углу. */
+function fmtText(raw){
+  const s = String(raw == null ? '' : raw);
+  const parts = s.split('```');
+  if (parts.length === 1) return linkify(esc(s));
+  let out = '';
+  parts.forEach((p, i) => {
+    if (i % 2 === 1){
+      /* первая строка блока может быть языком (js, dart, bash…) — убираем её */
+      let code = p.replace(/^[a-zA-Z0-9+#._-]*\r?\n/, '').replace(/\r?\n$/, '');
+      out += '<div class="m-code"><button class="code-copy" onclick="copyCode(this)">📋 Копировать</button><pre>' + esc(code) + '</pre></div>';
+    } else {
+      out += linkify(esc(p));
+    }
+  });
+  return out;
+}
+function copyCode(btn){
+  const pre = btn && btn.parentElement ? btn.parentElement.querySelector('pre') : null;
+  if (!pre) return;
+  const text = pre.innerText;
+  const done = () => {
+    btn.textContent = '✅ Скопировано';
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.textContent = '📋 Копировать'; }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+/* запасной путь для старых Android-браузеров без Clipboard API */
+function fallbackCopy(text, done){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) done(); else toast('Не удалось скопировать');
+  } catch(e){ toast('Не удалось скопировать'); }
+}
 function viewImg(id){
   for (const ch in store){ const m = store[ch].find(x => x.id === id); if (m){ $('viewerImg').src = m.data; $('viewer').classList.add('on'); return; } }
 }
