@@ -191,6 +191,18 @@ body::before{
 .msg.me .m-name{color:var(--gold1);text-align:right}
 .m-text{font-size:14.7px;line-height:1.5;white-space:pre-wrap}
 .m-text a{color:var(--ice);text-decoration:none}
+/* блок кода в сообщении + кнопка «Копировать» */
+.m-code{position:relative;margin:6px 0 4px;border-radius:12px;overflow:hidden;
+  background:rgba(0,0,0,.42);border:1px solid var(--stroke)}
+.m-code pre{margin:0;padding:32px 11px 10px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:1.55;color:#cfe3ff;white-space:pre;-webkit-overflow-scrolling:touch}
+.m-code pre::-webkit-scrollbar{height:5px}
+.m-code pre::-webkit-scrollbar-thumb{background:rgba(212,175,55,.35);border-radius:9px}
+.code-copy{position:absolute;top:6px;right:6px;z-index:2;padding:5px 10px;border-radius:9px;cursor:pointer;
+  font-family:inherit;font-weight:700;font-size:11.5px;letter-spacing:.3px;
+  background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.4);color:var(--gold1);
+  transition:.18s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.code-copy:active{transform:scale(.93);background:rgba(212,175,55,.3)}
 .m-time{font-size:10.5px;color:var(--muted);margin-top:4px;text-align:right;letter-spacing:.3px}
 .m-img{max-width:230px;border-radius:12px;display:block;cursor:pointer;margin:2px 0}
 .m-file{
