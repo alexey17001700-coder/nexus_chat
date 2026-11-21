@@ -1562,7 +1562,7 @@ function renderMsg(m){
       ${mine ? '' : `<div class="m-name">${esc(m.nick)}</div>`}
       <div class="m-shell">${body}</div>
       <div class="m-foot">
-        <button class="m-copy" onclick="copyMsg('${m.id}')" title="Копировать сообщение">📋</button>
+        <button class="m-copy" onclick="copyMsg('${safeId(m.id)}')" title="Копировать сообщение">📋</button>
         <span class="m-time">${fmtTime(m.time)}</span>
       </div>
     </div>
