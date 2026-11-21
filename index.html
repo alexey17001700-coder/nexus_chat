@@ -1424,7 +1424,7 @@ function renderChannels(){
   box.innerHTML = channels.map(c => {
     const n = unread[c.id] || 0;
     return `
-    <div class="chan ${c.id===cur?'on':''}" onclick="joinChannel('${c.id}')">
+    <div class="chan ${c.id===cur?'on':''}" onclick="joinChannel('${safeId(c.id)}')">
       <div class="ci">${esc(c.ic || '💬')}</div>
       <div style="min-width:0;flex:1">
         <div class="cn">${esc(c.name)}</div>
