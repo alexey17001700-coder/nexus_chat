@@ -1515,7 +1515,10 @@ function renderMsg(m){
     <div class="bub">
       ${mine ? '' : `<div class="m-name">${esc(m.nick)}</div>`}
       ${body}
-      <div class="m-time">${fmtTime(m.time)}</div>
+      <div class="m-foot">
+        <button class="m-copy" onclick="copyMsg('${m.id}')" title="Копировать сообщение">📋</button>
+        <span class="m-time">${fmtTime(m.time)}</span>
+      </div>
     </div>
   </div>`;
 }
