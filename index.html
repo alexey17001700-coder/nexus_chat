@@ -890,7 +890,7 @@ function doAuth(){
     if (u[key].pass !== btoa(pass)){ err.textContent = 'Неверный пароль'; return; }
   }
   const acc = u[key];
-  me = { nick: acc.nick, id: acc.id, color: acc.color || colorOf(acc.nick) };
+  me = { nick: acc.nick, id: acc.id, color: safeColor(acc.color) || colorOf(acc.nick) };
   localStorage.setItem('nx_me', JSON.stringify(me));
   enterApp();
 }
