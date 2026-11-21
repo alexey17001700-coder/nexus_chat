@@ -203,7 +203,14 @@ body::before{
   background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.4);color:var(--gold1);
   transition:.18s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .code-copy:active{transform:scale(.93);background:rgba(212,175,55,.3)}
-.m-time{font-size:10.5px;color:var(--muted);margin-top:4px;text-align:right;letter-spacing:.3px}
+.m-foot{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:4px}
+.m-time{font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+.m-copy{
+  border:0;background:transparent;color:var(--muted);font-size:12.5px;line-height:1;
+  padding:3px 6px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.18s;
+}
+.m-copy:active{background:var(--panel2);color:var(--gold1);transform:scale(.92)}
+.m-copy.ok{color:var(--ok)}
 .m-img{max-width:230px;border-radius:12px;display:block;cursor:pointer;margin:2px 0}
 .m-file{
   display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;
