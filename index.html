@@ -1997,6 +1997,20 @@ function renderOnline(){
     .sort((a, b) => ((mem[b] && mem[b].last) || 0) - ((mem[a] && mem[a].last) || 0));
   $('onlineSub').textContent = (c ? (c.ic + ' ' + c.name) : 'Канал') + ' · ' + list.length + ' в сети, ' + off.length + ' офлайн';
 
+  /* строка-диагностика: сразу видно, ОТКУДА взялся список.
+     сервер — ответ на запрос «who» · пульс — сигналы от самих участников */
+  const dg = $('onlineDiag');
+  if (dg){
+    const srv = (online[cur] || []).length;
+    const pulse = Object.keys(seenNick[cur] || {}).length;
+    const live = clients.filter(x => x.connected).length;
+    const httpOk = ntfyAlive && (Date.now() - lastHttpOk < 25000);
+    dg.innerHTML = 'источник — сервер: <b>' + srv + '</b> · пульс участников: <b>' + pulse + '</b><br>'
+      + 'Vivo WS: ' + (wsAlive() ? '✓' : '—')
+      + ' · MQTT: ' + live + '/' + BROKERS.length
+      + ' · HTTP: ' + (httpOk ? '✓' : '—');
+  }
+
   let html = whoSec('🟢 В сети · ' + list.length);
   html += list.length
     ? list.map(u => memberRow(u.nick, u.id, true, 0)).join('')
