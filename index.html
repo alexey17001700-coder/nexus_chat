@@ -1543,18 +1543,18 @@ function renderMsg(m){
   } else if (m.type === 'image'){
     body = m.trimmed
       ? `<div class="m-file"><span class="fi">🖼️</span><span style="min-width:0"><span class="fn">Фото</span><br><span class="fs">в истории не сохраняется</span></span></div>`
-      : `<img class="m-img" src="${m.data}" onclick="viewImg('${m.id}')" alt="фото">`;
+      : `<img class="m-img" src="${safeUrl(m.data)}" onclick="viewImg('${safeId(m.id)}')" alt="фото">`;
   } else if (m.type === 'file'){
     body = m.trimmed
       ? `<div class="m-file"><span class="fi">📄</span><span style="min-width:0"><span class="fn">${esc(m.name||'Файл')}</span><br><span class="fs">в истории не сохраняется</span></span></div>`
-      : `<a class="m-file" href="${m.data}" download="${esc(m.name)}">
+      : `<a class="m-file" href="${safeUrl(m.data)}" download="${esc(m.name)}">
       <span class="fi">📄</span>
       <span style="min-width:0"><span class="fn">${esc(m.name)}</span><br><span class="fs">${fmtSize(m.size||0)} · скачать</span></span>
     </a>`;
   } else if (m.type === 'audio'){
     body = m.trimmed
       ? `<div class="m-file"><span class="fi">🎤</span><span style="min-width:0"><span class="fn">Голосовое</span><br><span class="fs">в истории не сохраняется</span></span></div>`
-      : `<audio class="m-audio" controls src="${m.data}"></audio>`;
+      : `<audio class="m-audio" controls src="${safeUrl(m.data)}"></audio>`;
   }
   return `<div class="msg ${mine?'me':''}">
     ${av}
