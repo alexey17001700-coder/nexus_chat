@@ -1558,6 +1558,29 @@ function copyCode(btn){
     fallbackCopy(text, done);
   }
 }
+/* ================= КОПИРОВАНИЕ СООБЩЕНИЯ =================
+   Кнопка 📋 под каждым сообщением — копирует текст целиком.
+   Для вложений копируется понятная подпись (фото / имя файла / голосовое). */
+function copyMsg(id){
+  let m = null;
+  for (const ch in store){
+    const f = (store[ch] || []).find(x => x.id === id);
+    if (f){ m = f; break; }
+  }
+  if (!m) return;
+  let text = '';
+  if (m.type === 'text') text = String(m.text == null ? '' : m.text);
+  else if (m.type === 'image') text = '🖼️ Фото';
+  else if (m.type === 'file') text = '📄 ' + (m.name || 'Файл');
+  else if (m.type === 'audio') text = '🎤 Голосовое';
+  if (!text){ toast('Нечего копировать'); return; }
+  const done = () => toast('Скопировано 📋');
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
 /* запасной путь для старых Android-браузеров без Clipboard API */
 function fallbackCopy(text, done){
   try {
