@@ -2022,7 +2022,26 @@ function renderOnline(){
   }
   box.innerHTML = html;
 }
+/* спросить у сервера актуальный список участников канала.
+   Если сокет канала закрыт — поднимаем его заново, иначе ответа не будет. */
+function askWho(){
+  if (!cur) return;
+  const s = wsSocks[cur];
+  if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'who', room: cur })); } catch(e){} }
+  else wsConnect(cur);
+}
 function openOnline(){
+  askWho();
+  presencePing();
+  renderOnline();
+  $('onlineModal').classList.add('on');
+}
+function refreshOnline(){
+  askWho();
+  presencePing();
+  renderOnline();
+  toast('Список обновлён 🔄');
+}
 function closeOnline(){ $('onlineModal').classList.remove('on'); }
 
 /* ================= DRAWER ================= */
