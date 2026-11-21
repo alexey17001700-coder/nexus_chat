@@ -1385,6 +1385,8 @@ function mergeDir(d){
 
 function addMsg(chId, m, live){
   if (!m) return;
+  /* id сообщения приходит из сети — приводим к безопасному виду */
+  m.id = safeId(m.id) || uid();
   /* живой след: кто-то писал в канал — значит он в сети */
   markNick(chId, m.nick);
   if (!store[chId]){ store[chId] = []; seen[chId] = new Set(); }
