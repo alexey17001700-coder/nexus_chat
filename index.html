@@ -191,6 +191,30 @@ body::before{
 .msg.me .m-name{color:var(--gold1);text-align:right}
 .m-text{font-size:14.7px;line-height:1.5;white-space:pre-wrap}
 .m-text a{color:var(--ice);text-decoration:none}
+/* ============ ОБОЛОЧКА СООБЩЕНИЯ ============
+   Текст каждого сообщения живёт в отдельном контейнере .m-shell.
+   Выделять и копировать можно ТОЛЬКО его: интерфейс приложения
+   (кнопки, шапка, меню) в буфер обмена не попадает. */
+body{user-select:none;-webkit-user-select:none}
+input,textarea,.m-shell,.m-shell *{user-select:text;-webkit-user-select:text}
+.m-shell button,.m-shell .m-img,.m-shell .m-audio,.m-shell .m-file{user-select:none;-webkit-user-select:none}
+.m-shell{
+  margin:2px 0 0;padding:8px 10px;border-radius:12px;
+  background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.msg.me .m-shell{background:rgba(0,0,0,.2);border-color:rgba(212,175,55,.22)}
+.m-shell .m-code{margin:0}
+.m-shell .m-code:first-child pre{padding-top:32px}
+/* кнопка «Копировать выделенное» — появляется, когда выделен текст сообщения */
+#selCopy{
+  position:fixed;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+  z-index:99;padding:11px 18px;border-radius:14px;border:1px solid rgba(212,175,55,.45);
+  background:linear-gradient(135deg,var(--gold2),var(--gold3));color:#1a1405;
+  font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;
+  opacity:0;pointer-events:none;transition:.22s;box-shadow:0 12px 34px rgba(0,0,0,.55);
+}
+#selCopy.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
 /* блок кода в сообщении + кнопка «Копировать» */
 .m-code{position:relative;margin:6px 0 4px;border-radius:12px;overflow:hidden;
   background:rgba(0,0,0,.42);border:1px solid var(--stroke)}
