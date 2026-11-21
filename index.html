@@ -1620,6 +1620,34 @@ function fallbackCopy(text, done){
     if (ok) done(); else toast('Не удалось скопировать');
   } catch(e){ toast('Не удалось скопировать'); }
 }
+/* ================= КОПИРОВАНИЕ ВЫДЕЛЕННОГО =================
+   Выделять текст можно только внутри оболочки сообщения (.m-shell).
+   Поэтому в буфер обмена никогда не попадает интерфейс приложения. */
+function selText(){
+  const s = window.getSelection ? window.getSelection() : null;
+  if (!s || s.isCollapsed || !s.rangeCount) return '';
+  const node = s.getRangeAt(0).commonAncestorContainer;
+  const el = node.nodeType === 1 ? node : node.parentElement;
+  if (!el || !el.closest || !el.closest('.m-shell')) return '';
+  return String(s.toString() || '').trim();
+}
+function selCopyUI(){
+  const b = $('selCopy');
+  if (!b) return;
+  b.classList.toggle('on', !!selText());
+}
+function copySelection(){
+  const t = selText();
+  if (!t){ toast('Выдели текст сообщения'); return; }
+  const done = () => { toast('Выделенное скопировано 📋'); selCopyUI(); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(() => fallbackCopy(t, done));
+  } else {
+    fallbackCopy(t, done);
+  }
+}
+document.addEventListener('selectionchange', selCopyUI);
+
 function viewImg(id){
   for (const ch in store){ const m = store[ch].find(x => x.id === id); if (m){ $('viewerImg').src = m.data; $('viewer').classList.add('on'); return; } }
 }
