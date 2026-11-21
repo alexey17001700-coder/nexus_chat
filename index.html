@@ -1963,7 +1963,7 @@ async function takePresence(chId, env){
     if (chId === cur) renderOnline();
   } catch(e){ /* чужой ключ — молча игнорируем */ }
 }
-setInterval(() => { if (cur) presencePing(); }, 10000);
+setInterval(() => { if (cur) presencePing(); }, 6000);
 
 /* уходим со страницы (закрыли вкладку / свернули приложение) — сразу сообщаем
    каналу «меня нет», чтобы не висел в списке «в сети» до истечения таймаута */
