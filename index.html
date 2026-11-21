@@ -593,6 +593,10 @@ input,textarea,.m-shell,.m-shell *{user-select:text;-webkit-user-select:text}
       <button class="sheet-close" onclick="closeOnline()">✕</button>
     </div>
     <div class="sub" id="onlineSub">Кто в сети и кто есть в канале</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn-main" style="padding:10px;font-size:13px" onclick="refreshOnline()">🔄 Обновить список</button>
+    </div>
+    <div id="onlineDiag" style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.6"></div>
     <div id="onlineList"></div>
   </div>
 </div>
