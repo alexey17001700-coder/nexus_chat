@@ -1280,8 +1280,7 @@ setInterval(() => {
    Раньше интервал был 12 сек — список успевал устареть, и казалось, что никого нет. */
 setInterval(() => {
   if (!cur || !me) return;
-  const s = wsSocks[cur];
-  if (s && s.readyState === 1){ try { s.send(JSON.stringify({ t: 'who', room: cur })); } catch(e){} }
+  askWho();
   renderOnline();
 }, 5000);
 async function wsOnMessage(room, raw){
