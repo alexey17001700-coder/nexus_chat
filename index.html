@@ -192,20 +192,18 @@ body::before{
 .m-text{font-size:14.7px;line-height:1.5;white-space:pre-wrap}
 .m-text a{color:var(--ice);text-decoration:none}
 /* ============ ОБОЛОЧКА СООБЩЕНИЯ ============
-   Текст каждого сообщения живёт в отдельном контейнере .m-shell.
-   Выделять и копировать можно ТОЛЬКО его: интерфейс приложения
-   (кнопки, шапка, меню) в буфер обмена не попадает. */
-body{user-select:none;-webkit-user-select:none}
-input,textarea,.m-shell,.m-shell *{user-select:text;-webkit-user-select:text}
-.m-shell button,.m-shell .m-img,.m-shell .m-audio,.m-shell .m-file{user-select:none;-webkit-user-select:none}
-.m-shell{
-  margin:2px 0 0;padding:8px 10px;border-radius:12px;
-  background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.07);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+   Текст сообщения живёт в контейнере .m-shell. Выделять и копировать можно
+   только его — интерфейс (шапка, кнопки, меню) в буфер не попадает.
+   ВАЖНО: user-select:none стоит ТОЛЬКО на элементах интерфейса.
+   На body его ставить нельзя — на Android это ломает ввод текста в поле
+   сообщения и выделение в чате. */
+.topbar,.composer,.dr-foot,.dr-head,.dr-sec,.tabs,#drawer,#overlay,
+.icon-btn,.cbtn,.chan,.chan-del,.m-copy,.code-copy,#selCopy,#banner,#toast,
+.modal .sheet-head,.tour-card,.emoji-cats,.emoji-grid span{
+  user-select:none;-webkit-user-select:none;
 }
-.msg.me .m-shell{background:rgba(0,0,0,.2);border-color:rgba(212,175,55,.22)}
-.m-shell .m-code{margin:0}
-.m-shell .m-code:first-child pre{padding-top:32px}
+.m-shell{margin:2px 0 0;padding:0;background:none;border:0;box-shadow:none;border-radius:0}
+input,textarea,.m-shell,.m-shell *{user-select:text;-webkit-user-select:text}
 /* кнопка «Копировать выделенное» — появляется, когда выделен текст сообщения */
 #selCopy{
   position:fixed;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
